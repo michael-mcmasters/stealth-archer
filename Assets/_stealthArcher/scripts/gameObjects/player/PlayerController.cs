@@ -35,19 +35,18 @@ public class PlayerController : MonoBehaviour
         playerMovementHandler.HandleInput();
     }
 
-    private void SelectWeapon(GameObject weaponPrefab) {
-        Destroy(selectedWeapon.gameObject);
-        selectedWeapon = Instantiate(weaponPrefab).GetComponent<IWeapon>();
-    }
-    
     public void OnBowButton() {
         SelectWeapon(GameObjects.BowPrefab);
     }
 
+    public void OnHeavyBowButton() {
+        SelectWeapon(GameObjects.HeavyBowPrefab);
+    }
+    
     public void OnBoomerangeButton() {
         SelectWeapon(GameObjects.BoomerangPrefab);
     }
-
+    
     public void OnWhistleButton() {
         int whistleRange = 6;
 
@@ -69,4 +68,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void SelectWeapon(GameObject weaponPrefab) {
+        Destroy(selectedWeapon.gameObject);
+        selectedWeapon = Instantiate(weaponPrefab).GetComponent<IWeapon>();
+    }
+    
 }
