@@ -10,8 +10,6 @@ public class Bow : IWeapon {
 
     private Trackpad trackpad;
 
-    private bool inputActive;
-
     [Header("Aiming")]
     [SerializeField] private LineRenderer aimerLineRendererPrefab;
     private LineRenderer aimerLineRendererObj;

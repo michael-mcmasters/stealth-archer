@@ -18,6 +18,17 @@ public class Arrow : MonoBehaviour {
 
     void Start() {
         this.rigidbody = GetComponent<Rigidbody>();
+        
+        // Create line renderer
+        // LineRenderer lr = GetComponent<LineRenderer>();
+        // lr.useWorldSpace = false;   // local space
+        // lr.positionCount = 2;
+        // lr.SetPosition(0, new Vector3(0, 0, -5f));
+        // lr.SetPosition(1, new Vector3(0, 0, 0f)); // draw forward
+        // lr.startWidth = 0.1f;
+        // lr.endWidth = 0.1f;
+        // lr.material = new Material(Shader.Find("Sprites/Default"));
+
     }
     
     public void Shoot(List<Vector3> bezierCurve, float speed, float damage) {
@@ -78,7 +89,8 @@ public class Arrow : MonoBehaviour {
         }
         
         // Attach to object
-        transform.parent = collision.transform;
+        // transform.parent = collision.transform;
+        
         Destroy(rigidbody);
         StopCoroutine(traversePathCoroutine);
     }

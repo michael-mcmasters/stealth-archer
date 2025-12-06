@@ -54,11 +54,13 @@ public class Trackpad {
             }
 
             if (InputFacade.GetTouch(touchIndex)) {
-                Vector3 touchStartPosition = GetAdjustedStartPosition();
-                Vector3 touchCurrentPosition = ClickDetector.GetClick(touchIndex).ClickPosition;
-                joystickData.AroundPlayerPosition = MimicTouchInputAroundPlayer(playerObj, touchStartPosition, touchCurrentPosition);
+                Vector3 touchGroundStartPosition = GetAdjustedStartPosition();
+                Vector3 touchGroundCurrentPosition = ClickDetector.GetClick(touchIndex).ClickPosition;
+                joystickData.AroundPlayerPosition = MimicTouchInputAroundPlayer(playerObj, touchGroundStartPosition, touchGroundCurrentPosition);
+                joystickData.Direction = (touchGroundCurrentPosition - touchGroundStartPosition).normalized;
+                joystickData.Rotation = Quaternion.LookRotation((touchGroundCurrentPosition - touchGroundStartPosition), Vector3.up);
                 
-                inCancelRange = Vector3.Distance(touchStartPosition, touchCurrentPosition) < 0.5f;
+                inCancelRange = Vector3.Distance(touchGroundStartPosition, touchGroundCurrentPosition) < 0.5f;
                 if (inCancelRange) {
                     GameObjects.CancelText.SetActive(true);
                     callback(JoystickEvent.InCancelRange, joystickData);

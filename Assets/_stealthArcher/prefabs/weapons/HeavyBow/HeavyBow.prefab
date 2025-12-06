@@ -44,9 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32a0a3bf46864463848b1edfdaacb4fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aimerPrefab: {fileID: 0}
-  maxAimDistance: 3
+  widthDecreaseSpeed: 0.005
   arrowPrefab: {fileID: 3620037301732726720, guid: e5653aa8f252b4ca4be6691bb464f10d,
     type: 3}
-  arrowSpeed: 6
+  arrowSpeed: 25
   damage: 5

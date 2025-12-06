@@ -118,7 +118,7 @@ Rigidbody:
   m_Drag: 0
   m_AngularDrag: 0
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
@@ -173,7 +173,7 @@ GameObject:
   - component: {fileID: 464896484491317783}
   - component: {fileID: 6809676355913599409}
   - component: {fileID: 2185549141586421482}
-  - component: {fileID: 547000207307330120}
+  - component: {fileID: 8490691625988197949}
   m_Layer: 8
   m_Name: Head
   m_TagString: Enemy
@@ -246,8 +246,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &547000207307330120
-SphereCollider:
+--- !u!65 &8490691625988197949
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -257,8 +257,8 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.0000001, y: 1, z: 2.101159}
+  m_Center: {x: 0.000000049670536, y: 0, z: -0.019218922}
 --- !u!1 &6674410730163327590
 GameObject:
   m_ObjectHideFlags: 0
