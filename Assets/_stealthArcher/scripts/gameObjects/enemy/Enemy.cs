@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Transactions;
 using _stealthArcher.scripts.constants;
+using _stealthArcher.scripts.gameObjects.headshotText;
 using _stealthArcher.scripts.input;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -52,6 +53,7 @@ public class Enemy : MonoBehaviour {
             GetComponent<Renderer>().material.color = Color.red;
         }
         if (health <= 0) {
+            HeadshotText.Instance.Activate(this);
             Destroy(this.gameObject);
         }
     }

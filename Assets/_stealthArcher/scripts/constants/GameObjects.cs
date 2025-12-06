@@ -48,6 +48,8 @@ public class GameObjects : MonoBehaviour {
     [SerializeField] private GameObject rightJoystickInnerCircleObj;
     public static GameObject RightJoystickInnerCircleObj => Instance.rightJoystickInnerCircleObj;
 
+    [SerializeField] private GameObject headshotTextObj;
+    public static GameObject HeadshotTextObj => Instance.headshotTextObj;
     
     private static GameObjects instance;
     public static GameObjects Instance => (instance == null) ? instance = FindObjectOfType<GameObjects>() : instance;
