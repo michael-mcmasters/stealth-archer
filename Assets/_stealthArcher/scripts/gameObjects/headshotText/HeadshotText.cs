@@ -14,15 +14,16 @@ public class HeadshotText {
     }
     
     public void Activate(Enemy enemy) {
-        GameObject headshotTextObj = GameObjects.HeadshotTextObj;
+        Debug.Log("Activate");
+        // GameObject headshotTextObj = GameObjects.HeadshotTextPrefab;
+        GameObject headshotTextObj = MonoBehaviourUtil.Instantiate(GameObjects.HeadshotTextPrefab);
         headshotTextObj.transform.position = new Vector3(enemy.transform.position.x, 3, enemy.transform.position.z);
         headshotTextObj.transform.LookAt(headshotTextObj.transform.position + Camera.main.transform.forward);
-        CoroutineRunner.Run(MoveUpCoroutine());
+        MonoBehaviourUtil.Run(MoveUpCoroutine(headshotTextObj));
     }
     
-    private IEnumerator MoveUpCoroutine() {
+    private IEnumerator MoveUpCoroutine(GameObject headshotTextObj) {
         float speed = 4;
-        GameObject headshotTextObj = GameObjects.HeadshotTextObj;
         
         // Keep moving while the global y position is less than 100
         while (headshotTextObj.transform.position.y < 100f)

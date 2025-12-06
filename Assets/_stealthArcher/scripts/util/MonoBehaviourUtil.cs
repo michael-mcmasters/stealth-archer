@@ -3,15 +3,15 @@ using UnityEngine;
 
 namespace _stealthArcher.scripts.util {
     
-/* Utility class to run Coroutines when not in a MonoBehaviour */
-public class CoroutineRunner : MonoBehaviour {
-    private static CoroutineRunner _instance;
+/* Utility class for regular classes to run MonoBehaviour methods */
+public class MonoBehaviourUtil : MonoBehaviour {
+    private static MonoBehaviourUtil _instance;
 
-    public static CoroutineRunner Instance {
+    public static MonoBehaviourUtil Instance {
         get {
             if (_instance == null) {
                 GameObject go = new GameObject("CoroutineRunner");
-                _instance = go.AddComponent<CoroutineRunner>();
+                _instance = go.AddComponent<MonoBehaviourUtil>();
                 DontDestroyOnLoad(go);
             }
 

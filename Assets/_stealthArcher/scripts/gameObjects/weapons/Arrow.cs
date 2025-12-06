@@ -11,24 +11,13 @@ public class Arrow : MonoBehaviour {
     
     private float damage;
 
-    private Collider alreadyHitCollider;        // Needed because arrow will bounce on enemy collider a few times. So this makes sure it only counts as 1 hit.
+    private HashSet<Enemy> enemiesHit = new HashSet<Enemy>();
 
     private Coroutine traversePathCoroutine;
     
 
     void Start() {
         this.rigidbody = GetComponent<Rigidbody>();
-        
-        // Create line renderer
-        // LineRenderer lr = GetComponent<LineRenderer>();
-        // lr.useWorldSpace = false;   // local space
-        // lr.positionCount = 2;
-        // lr.SetPosition(0, new Vector3(0, 0, -5f));
-        // lr.SetPosition(1, new Vector3(0, 0, 0f)); // draw forward
-        // lr.startWidth = 0.1f;
-        // lr.endWidth = 0.1f;
-        // lr.material = new Material(Shader.Find("Sprites/Default"));
-
     }
     
     public void Shoot(List<Vector3> bezierCurve, float speed, float damage) {
@@ -73,18 +62,19 @@ public class Arrow : MonoBehaviour {
     }
 
     void OnCollisionEnter(Collision collision) {
-        if (collision.collider == alreadyHitCollider) return;
-        
-        alreadyHitCollider = collision.collider;
-        
         if (collision.collider.CompareTag(Tags.Enemy)) {
             Enemy enemy = collision.collider.GetComponent<Enemy>();
             if (enemy == null) {
                 enemy = collision.collider.GetComponentInParent<Enemy>();
             }
 
+            // Arrow likes to bounce on the same collider - This makes sure we only register the hit once 
+            if (enemiesHit.Contains(enemy)) {
+                return;
+            }
+            enemiesHit.Add(enemy);
+
             bool headshot = collision.collider.name == Constants.HEAD;
-            
             enemy.TakeDamage(damage, headshot);
         }
         
@@ -94,4 +84,28 @@ public class Arrow : MonoBehaviour {
         Destroy(rigidbody);
         StopCoroutine(traversePathCoroutine);
     }
+    
+    // void OnCollisionEnter(Collision collision) {
+    //     if (collidersHit.Contains(collision.collider)) return;
+    //
+    //     Debug.Log("Collision");
+    //     collidersHit.Add(collision.collider);
+    //     
+    //     if (collision.collider.CompareTag(Tags.Enemy)) {
+    //         Enemy enemy = collision.collider.GetComponent<Enemy>();
+    //         if (enemy == null) {
+    //             enemy = collision.collider.GetComponentInParent<Enemy>();
+    //         }
+    //
+    //         bool headshot = collision.collider.name == Constants.HEAD;
+    //         
+    //         enemy.TakeDamage(damage, headshot);
+    //     }
+    //     
+    //     // Attach to object
+    //     // transform.parent = collision.transform;
+    //     
+    //     Destroy(rigidbody);
+    //     StopCoroutine(traversePathCoroutine);
+    // }
 }
