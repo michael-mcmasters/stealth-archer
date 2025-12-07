@@ -39,6 +39,7 @@ public class Arrow : MonoBehaviour {
         while (!atDestination) {
             rigidbody.MovePosition(Vector3.MoveTowards(rigidbody.position, targetPoint, movementSpeed * Time.deltaTime));
             RotateTowards(targetPoint, rotationSpeed);
+            // Debug.Log(transform.position.y);
 
             if (VectorUtil.VectorsAreEqual(rigidbody.position, targetPoint)) {
                 if (targetPointIndex + 1 < points.Count) {
@@ -60,52 +61,44 @@ public class Arrow : MonoBehaviour {
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         rigidbody.MoveRotation(Quaternion.Slerp(rigidbody.rotation, lookRotation, Time.deltaTime * rotationSpeed));
     }
-
-    void OnCollisionEnter(Collision collision) {
-        if (collision.collider.CompareTag(Tags.Enemy)) {
-            Enemy enemy = collision.collider.GetComponent<Enemy>();
+    
+    void OnTriggerEnter(Collider collider) {
+        if (collider.CompareTag(Tags.Enemy)) {
+            Enemy enemy = collider.GetComponent<Enemy>();
             if (enemy == null) {
-                enemy = collision.collider.GetComponentInParent<Enemy>();
+                enemy = collider.GetComponentInParent<Enemy>();
             }
-
-            // Arrow likes to bounce on the same collider - This makes sure we only register the hit once 
+            
+            bool hitHead = checkHeadCollision();
+            
+            // Multiple colliders can be activated on same Enemy - This makes sure logic only runs once
             if (enemiesHit.Contains(enemy)) {
+                Debug.Log("already detected");
                 return;
             }
             enemiesHit.Add(enemy);
-
-            bool headshot = collision.collider.name == Constants.HEAD;
-            enemy.TakeDamage(damage, headshot);
+            
+            enemy.TakeDamage(damage, hitHead);
         }
-        
-        // Attach to object
-        // transform.parent = collision.transform;
         
         Destroy(rigidbody);
         StopCoroutine(traversePathCoroutine);
     }
     
-    // void OnCollisionEnter(Collision collision) {
-    //     if (collidersHit.Contains(collision.collider)) return;
-    //
-    //     Debug.Log("Collision");
-    //     collidersHit.Add(collision.collider);
-    //     
-    //     if (collision.collider.CompareTag(Tags.Enemy)) {
-    //         Enemy enemy = collision.collider.GetComponent<Enemy>();
-    //         if (enemy == null) {
-    //             enemy = collision.collider.GetComponentInParent<Enemy>();
-    //         }
-    //
-    //         bool headshot = collision.collider.name == Constants.HEAD;
-    //         
-    //         enemy.TakeDamage(damage, headshot);
-    //     }
-    //     
-    //     // Attach to object
-    //     // transform.parent = collision.transform;
-    //     
-    //     Destroy(rigidbody);
-    //     StopCoroutine(traversePathCoroutine);
-    // }
+    private bool checkHeadCollision() {
+        Vector3 origin = transform.position;
+        Vector3 direction = transform.forward;
+        float distance = 1f;
+        
+        RaycastHit[] hits = Physics.RaycastAll(origin, direction, distance);
+        Debug.DrawRay(origin, direction * distance, Color.red);
+        
+        foreach (RaycastHit hit in hits) {
+            if (hit.collider.name == Constants.HEAD) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

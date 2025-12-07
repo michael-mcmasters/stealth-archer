@@ -13,7 +13,7 @@ public class HeavyBow : IWeapon {
     private Trackpad trackpad;
     
     private GameObject playerObj;
-    private float aimerHeight = 1.9f;
+    private float aimerHeight = 2f;
     
     private GameObject aimerObj;
     private Mesh aimerMesh;
