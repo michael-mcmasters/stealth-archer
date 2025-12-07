@@ -79,10 +79,11 @@ public class Arrow : MonoBehaviour {
             enemiesHit.Add(enemy);
             
             enemy.TakeDamage(damage, hitHead);
+            
+            Destroy(rigidbody);
+            Destroy(this.gameObject);
+            StopCoroutine(traversePathCoroutine);
         }
-        
-        Destroy(rigidbody);
-        StopCoroutine(traversePathCoroutine);
     }
     
     private bool checkHeadCollision() {
