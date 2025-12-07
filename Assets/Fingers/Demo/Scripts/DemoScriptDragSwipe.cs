@@ -135,7 +135,7 @@ namespace DigitalRubyShared
                     Vector3 worldVelocity = (worldVelocityGesture - worldVelocityZero) * SwipeAwayVelocityMultiplier;
                     worldVelocity.z = 0.0f;
                     Rigidbody2D rb = draggingCard.GetComponent<Rigidbody2D>();
-                    rb.velocity = worldVelocity;
+                    rb.linearVelocity = worldVelocity;
 
                     // apply some random spin for fun
                     rb.angularVelocity = Random.Range(-1000.0f, 1000.0f);

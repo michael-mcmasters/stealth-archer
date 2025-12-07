@@ -90,7 +90,7 @@ namespace DigitalRubyShared
 
             o.GetComponent<Rigidbody2D>().angularVelocity = UnityEngine.Random.Range(0.0f, 30.0f);
             Vector2 velocity = UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(0, 30.0f);
-            o.GetComponent<Rigidbody2D>().velocity = velocity;
+            o.GetComponent<Rigidbody2D>().linearVelocity = velocity;
             float scale = UnityEngine.Random.Range(1.0f, 4.0f);
             o.transform.localScale = new Vector3(scale, scale, 1.0f);
             o.GetComponent<Rigidbody2D>().mass *= (scale * scale);
@@ -118,7 +118,7 @@ namespace DigitalRubyShared
             if (hit.transform != null && hit.transform.gameObject.name == "Asteroid")
             {
                 draggingAsteroid = hit.transform.gameObject;
-                draggingAsteroid.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                draggingAsteroid.GetComponent<Rigidbody2D>().linearVelocity = Vector2.zero;
                 draggingAsteroid.GetComponent<Rigidbody2D>().angularVelocity = 0.0f;
             }
             else
@@ -149,7 +149,7 @@ namespace DigitalRubyShared
             Vector3 origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
             Vector3 end = Camera.main.ScreenToWorldPoint(new Vector3(velocityXScreen, velocityYScreen, 0.0f));
             Vector3 velocity = (end - origin);
-            draggingAsteroid.GetComponent<Rigidbody2D>().velocity = velocity;
+            draggingAsteroid.GetComponent<Rigidbody2D>().linearVelocity = velocity;
             draggingAsteroid.GetComponent<Rigidbody2D>().angularVelocity = UnityEngine.Random.Range(5.0f, 45.0f);
             draggingAsteroid = null;
 

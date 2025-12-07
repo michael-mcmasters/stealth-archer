@@ -109,7 +109,7 @@ namespace DigitalRubyShared
             // calculate new velocity
             Vector3 velRight = Vector3.zero;
             Vector3 velForward = Vector3.zero;
-            Vector3 velUp = new Vector3(0.0f, Player.velocity.y, 0.0f);
+            Vector3 velUp = new Vector3(0.0f, Player.linearVelocity.y, 0.0f);
             if (forwardSpeed != null)
             {
                 velForward = Player.transform.forward * forwardSpeed.Value;
@@ -119,7 +119,7 @@ namespace DigitalRubyShared
                 velRight = Player.transform.right * sideSpeed.Value;
             }
             Vector3 vel = velRight + velForward + velUp;
-            Player.velocity = vel;
+            Player.linearVelocity = vel;
 
             // reduce jump timer
             jumpTimer -= Time.deltaTime;

@@ -61,7 +61,7 @@ namespace DigitalRubyShared
             projectile.transform.localScale = new Vector3(ProjectileScale, ProjectileScale, 1.0f);
             Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
             Vector2 worldSpace = Camera.main.ScreenToWorldPoint(new Vector2(gesture.FocusX, gesture.FocusY));
-            rb.velocity = FireSpeed * (worldSpace - (Vector2)Mover.transform.position).normalized;
+            rb.linearVelocity = FireSpeed * (worldSpace - (Vector2)Mover.transform.position).normalized;
             StartCoroutine(RemoveProjectile(projectile));
         }
 
