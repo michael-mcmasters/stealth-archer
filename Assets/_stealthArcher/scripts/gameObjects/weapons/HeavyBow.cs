@@ -10,7 +10,8 @@ using TouchPhase = UnityEngine.TouchPhase;
 namespace _stealthArcher.scripts.weaponPrefabs {
 public class HeavyBow : IWeapon {
 
-    private Trackpad trackpad;
+    // private Trackpad trackpad;
+    private Joystick joystick;
     
     private GameObject playerObj;
     // private float aimerHeight = 2f;
@@ -30,7 +31,27 @@ public class HeavyBow : IWeapon {
 
     void Start() {
         this.playerObj = GameObjects.Player;
-        this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
+        // this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
+        //     switch (joystickEvent) {
+        //         case JoystickEvent.Down:
+        //             BeginAim();
+        //             break;
+        //         case JoystickEvent.Hold:
+        //             ContinueAim(playerObj, joystickData);
+        //             break;
+        //         case JoystickEvent.Up:
+        //             Shoot();
+        //             break;
+        //         case JoystickEvent.InCancelRange:
+        //             ContinueAim(playerObj, joystickData);
+        //             // HandleInCancelRange();       // Make red to indicate you're about to cancel
+        //             break;
+        //         case JoystickEvent.Cancel:
+        //             CancelAim();
+        //             break;
+        //     }
+        // });
+        this.joystick = new Joystick(SpecificTouch.Right, (joystickEvent, joystickData) => {
             switch (joystickEvent) {
                 case JoystickEvent.Down:
                     BeginAim();
@@ -53,7 +74,7 @@ public class HeavyBow : IWeapon {
     }
     
     public override void HandleInput() {
-        trackpad?.HandleInput();
+        joystick?.HandleInput();
     }
     
     private void BeginAim() {
@@ -83,16 +104,38 @@ public class HeavyBow : IWeapon {
         );
         
         aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
+        
+        // aimerObj.transform.rotation = joystickData.Rotation;
+        // Vector3 euler = aimerObj.transform.rotation.eulerAngles;
+        // euler.x = 17.63f;   // aim it down
+        // aimerObj.transform.rotation = Quaternion.Euler(euler);
     }
 
-    // private void Shoot() {
-    //     Vector3 start = playerObj.transform.position;
-    //     Vector3 end = VectorUtil.NewPointInDirection(aimerObj, 100);
-    //     Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
-    //     Arrow arrow = Instantiate(arrowPrefab, start, spawnRotation).GetComponent<Arrow>();
+    // private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
+    //     float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
+    //     aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
     //     
-    //     Destroy(aimerObj);
-    //     arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
+    //     if (currentAimerWidth > minAllowedWidth) {
+    //         currentAimerWidth -= widthDecreaseSpeed;
+    //     }
+    //     
+    //     int length = 3;
+    //     SetAimerMesh(
+    //         new Vector3(0, 0, 0),
+    //         new Vector3(-currentAimerWidth, 0, length),
+    //         new Vector3(currentAimerWidth, 0, length)
+    //     );
+    //     
+    //     // aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
+    //
+    //     Debug.Log("---");
+    //     Debug.Log(joystickData.TiltPercentage);
+    //     Debug.Log(joystickData.AroundPlayerPosition);
+    //     
+    //     aimerObj.transform.rotation = joystickData.Rotation;
+    //     Vector3 euler = aimerObj.transform.rotation.eulerAngles;
+    //     euler.x = 17.63f;   // aim it down
+    //     aimerObj.transform.rotation = Quaternion.Euler(euler);
     // }
     
     private void Shoot() {

@@ -31,6 +31,7 @@ public class Joystick {
         this.initialTouchIndex = -1;
         
         GameObject joystick = (specificTouch == SpecificTouch.Left) ? GameObject.Find("LeftJoystick") : GameObject.Find("RightJoystick");
+        // GameObject joystick = (specificTouch == SpecificTouch.Left) ? GameObject.Find("RightJoystick") : GameObject.Find("LeftJoystick");
         joystickOuterCircleObj = joystick.transform.GetChild(0).gameObject;
         joystickInnerCircleObj = joystick.transform.GetChild(1).gameObject;
         joystickInitialPosition = joystick.transform.position;
@@ -59,6 +60,8 @@ public class Joystick {
                 Vector3 bigCirclePositionToGround = GetJoystickToWorldPosition(joystickOuterCircleObj.transform.position);
                 Vector3 smallCirclePositionToGround = GetJoystickToWorldPosition(joystickInnerCircleObj.transform.position);
                 joystickData.AroundPlayerPosition = MimicTouchInputAroundPlayer(bigCirclePositionToGround, smallCirclePositionToGround);
+                joystickData.Direction = (smallCirclePositionToGround - bigCirclePositionToGround).normalized;
+                joystickData.Rotation = Quaternion.LookRotation((smallCirclePositionToGround - bigCirclePositionToGround), Vector3.up);
                 
                 float startDistance = 0;
                 float midDistance = Vector3.Distance(joystickOuterCircleObj.transform.position, joystickInnerCircleObj.transform.position);
@@ -80,12 +83,14 @@ public class Joystick {
     }
 
     private void MoveJoystick(Vector3 screenPosition) {
+        Debug.Log("screenPosition: " + screenPosition);
         joystickOuterCircleObj.transform.position = screenPosition;
         joystickInnerCircleObj.transform.position = screenPosition;
     }
 
     // Follows finger
     private void MoveJoystickWithTouch() {
+        Debug.Log("MoveJoystickWithTouch");
         // Move inner circle
         joystickInnerCircleObj.transform.position = InputFacade.GetTouchPosition(touchIndex);
         float maxDistance = Vector3.Distance(joystickOuterCircleObj.transform.position, boundaryObj.transform.position);
