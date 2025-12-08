@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     
     void Start() {
         this.playerMovementHandler = GetComponent<PlayerMovementHandler>();
-        this.selectedWeapon = Instantiate(GameObjects.BowPrefab).GetComponent<IWeapon>();
+        this.selectedWeapon = Instantiate(GameObjects.HeavyBowPrefab).GetComponent<IWeapon>();
     }
 
     void Update() {
@@ -30,9 +30,12 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.Alpha2)) {
             SelectWeapon(GameObjects.BoomerangPrefab);
         }
+        if (Input.GetKey(KeyCode.Alpha3)) {
+            SelectWeapon(GameObjects.HeavyBowPrefab);
+        }
 
         selectedWeapon.HandleInput();
-        playerMovementHandler.HandleInput();
+        playerMovementHandler.HandleMovement();
     }
 
     public void OnBowButton() {

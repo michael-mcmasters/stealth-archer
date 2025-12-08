@@ -13,7 +13,7 @@ public class HeavyBow : IWeapon {
     private Trackpad trackpad;
     
     private GameObject playerObj;
-    private float aimerHeight = 2f;
+    // private float aimerHeight = 2f;
     
     private GameObject aimerObj;
     private Mesh aimerMesh;
@@ -68,6 +68,7 @@ public class HeavyBow : IWeapon {
     }
 
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
+        float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
         aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
         
         if (currentAimerWidth > minAllowedWidth) {

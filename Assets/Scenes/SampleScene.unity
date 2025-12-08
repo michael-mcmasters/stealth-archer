@@ -2385,7 +2385,7 @@ Transform:
   m_GameObject: {fileID: 1053342660}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.58, y: 1, z: -15.58}
+  m_LocalPosition: {x: -5.92, y: 5.27, z: -12.259687}
   m_LocalScale: {x: 0.75, y: 1, z: 0.75}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2434,6 +2434,7 @@ MonoBehaviour:
   speed: 5
   playerMovementVisualizerObj: {fileID: 1292370042}
   inputVisualizerMultiplier: 1.3
+  gravity: -9.81
 --- !u!114 &1053342672
 MonoBehaviour:
   m_ObjectHideFlags: 0

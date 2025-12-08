@@ -13,37 +13,50 @@ public class PlayerMovementHandler : MonoBehaviour {
     [SerializeField] private float speed;
     [SerializeField] private GameObject playerMovementVisualizerObj;
     [SerializeField] private float inputVisualizerMultiplier;       // Max distance visualizer can be from player
+    
+    [SerializeField] private float gravity = -9.81f;
+    private float currentVerticalVelocity;
 
     
     void Start() {
-        this.joystick = new Joystick(SpecificTouch.Left, this.Callback);
+        this.joystick = new Joystick(SpecificTouch.Left, (joystickEvent, joystickData) => {
+            switch (joystickEvent) {
+                case JoystickEvent.Hold:
+                    Move(joystickData.TiltPercentage, joystickData.AroundPlayerPosition);
+                    break;
+                case JoystickEvent.Up:
+                    HideMovementVisualizer();
+                    break;
+            }
+        });
         this.characterController = GetComponent<CharacterController>();
         playerMovementVisualizerObj.transform.position = PlayerFeetPosition();
     }
 
-    public void HandleInput() {
-        if (HandleKeyboardControls()) {
-            return;
-        }
-        else {
-            joystick.HandleInput();
-        }
+    public void HandleMovement() {
+        HandleKeyboardControls();
+        joystick.HandleInput();
+        applyGravity();
     }
 
-    public void Callback(JoystickEvent joystickEvent, JoystickData joystickData) {
-        switch (joystickEvent) {
-            case JoystickEvent.Hold:
-                Move(joystickData.TiltPercentage, joystickData.AroundPlayerPosition);
-                break;
-            case JoystickEvent.Up:
-                HideMovementVisualizer();
-                break;
+    // Needed because the CharacterController component doesn't apply gravity itself
+    private void applyGravity() {
+        if (characterController.isGrounded) {
+            if (currentVerticalVelocity < 0) {
+                // Player is on ground, maintain some gravity so they stay there
+                float groundedGravity = -2;
+                currentVerticalVelocity = groundedGravity;
+            }
+        } else {
+            // Player is not on ground, have them fall
+            currentVerticalVelocity += gravity * Time.deltaTime;
         }
+
+        Vector3 gravityMovement = new Vector3(0, currentVerticalVelocity, 0);
+        characterController.Move(gravityMovement * Time.deltaTime);
     }
 
-    /**
-     * Returns true if keyboard input was detected
-     */
+    // Returns true if keyboard input was detected
     private bool HandleKeyboardControls() {
         // Angled movement
         if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A)) {
