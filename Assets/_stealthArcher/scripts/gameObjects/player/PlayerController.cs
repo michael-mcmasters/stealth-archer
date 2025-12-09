@@ -24,16 +24,6 @@ public class PlayerController : MonoBehaviour
     }
 
     void Update() {
-        if (Input.GetKey(KeyCode.Alpha1)) {
-            SelectWeapon(GameObjects.BowPrefab);
-        }
-        if (Input.GetKey(KeyCode.Alpha2)) {
-            SelectWeapon(GameObjects.BoomerangPrefab);
-        }
-        if (Input.GetKey(KeyCode.Alpha3)) {
-            SelectWeapon(GameObjects.HeavyBowPrefab);
-        }
-
         selectedWeapon.HandleInput();
         playerMovementHandler.HandleMovement();
     }
@@ -48,6 +38,10 @@ public class PlayerController : MonoBehaviour
     
     public void OnBoomerangeButton() {
         SelectWeapon(GameObjects.BoomerangPrefab);
+    }
+    
+    public void OnCursorBowButton() {
+        SelectWeapon(GameObjects.CursorBowPrefab);
     }
     
     public void OnWhistleButton() {

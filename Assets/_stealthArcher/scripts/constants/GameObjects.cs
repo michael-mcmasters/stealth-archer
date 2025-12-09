@@ -22,6 +22,9 @@ public class GameObjects : MonoBehaviour {
     [SerializeField] private GameObject heavyBowPrefab;
     public static GameObject HeavyBowPrefab => Instance.heavyBowPrefab;
     
+    [SerializeField] private GameObject cursorBowPrefab;
+    public static GameObject CursorBowPrefab => Instance.cursorBowPrefab;
+    
     [SerializeField] private GameObject boomerangPrefab;
     public static GameObject BoomerangPrefab => Instance.boomerangPrefab;
     
