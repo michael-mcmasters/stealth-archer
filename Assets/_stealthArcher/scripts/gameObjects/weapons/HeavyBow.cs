@@ -114,16 +114,18 @@ public class HeavyBow : IWeapon {
 
     private void checkEnemies(GameObject playerObj, JoystickData joystickData) {
         float width = 0.5f;
-        float height = 0.5f;
+        float height = 20;
         float range = 100f;
         
-        RaycastHit hit;
         Vector3 origin = aimerObj.transform.position;
         Vector3 forward = aimerObj.transform.forward;
         Vector3 halfExtents = new Vector3(width, height, 0.5f);     // z doesn't matter here because the box 'slides' from origin, forward.
 
-        if (Physics.BoxCast(origin, halfExtents, forward, out hit, Quaternion.identity, range)) 
+        RaycastHit[] hits = Physics.BoxCastAll(origin, halfExtents, forward, Quaternion.identity, range, LayerMasks.DetectPlayerAimer);
+        foreach (RaycastHit hit in hits) {
             Debug.Log(hit.collider.name);
+        }
+
 
         bool debug = true;
         if (debug) {
