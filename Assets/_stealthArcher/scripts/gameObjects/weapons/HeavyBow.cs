@@ -10,8 +10,8 @@ using TouchPhase = UnityEngine.TouchPhase;
 namespace _stealthArcher.scripts.weaponPrefabs {
 public class HeavyBow : IWeapon {
 
-    // private Trackpad trackpad;
-    private Joystick joystick;
+    private Trackpad trackpad;
+    // private Joystick joystick;
     
     private GameObject playerObj;
     // private float aimerHeight = 2f;
@@ -51,7 +51,7 @@ public class HeavyBow : IWeapon {
         //             break;
         //     }
         // });
-        this.joystick = new Joystick(SpecificTouch.Right, (joystickEvent, joystickData) => {
+        this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
             switch (joystickEvent) {
                 case JoystickEvent.Down:
                     BeginAim();
@@ -74,7 +74,7 @@ public class HeavyBow : IWeapon {
     }
     
     public override void HandleInput() {
-        joystick?.HandleInput();
+        trackpad?.HandleInput();
     }
     
     private void BeginAim() {
@@ -104,39 +104,44 @@ public class HeavyBow : IWeapon {
         );
         
         aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
-        
+        checkEnemies(playerObj, joystickData);
+
         // aimerObj.transform.rotation = joystickData.Rotation;
         // Vector3 euler = aimerObj.transform.rotation.eulerAngles;
         // euler.x = 17.63f;   // aim it down
         // aimerObj.transform.rotation = Quaternion.Euler(euler);
     }
 
-    // private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
-    //     float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
-    //     aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
-    //     
-    //     if (currentAimerWidth > minAllowedWidth) {
-    //         currentAimerWidth -= widthDecreaseSpeed;
-    //     }
-    //     
-    //     int length = 3;
-    //     SetAimerMesh(
-    //         new Vector3(0, 0, 0),
-    //         new Vector3(-currentAimerWidth, 0, length),
-    //         new Vector3(currentAimerWidth, 0, length)
-    //     );
-    //     
-    //     // aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
-    //
-    //     Debug.Log("---");
-    //     Debug.Log(joystickData.TiltPercentage);
-    //     Debug.Log(joystickData.AroundPlayerPosition);
-    //     
-    //     aimerObj.transform.rotation = joystickData.Rotation;
-    //     Vector3 euler = aimerObj.transform.rotation.eulerAngles;
-    //     euler.x = 17.63f;   // aim it down
-    //     aimerObj.transform.rotation = Quaternion.Euler(euler);
-    // }
+    private void checkEnemies(GameObject playerObj, JoystickData joystickData) {
+        float width = 0.5f;
+        float height = 0.5f;
+        float range = 100f;
+        
+        RaycastHit hit;
+        Vector3 origin = aimerObj.transform.position;
+        Vector3 forward = aimerObj.transform.forward;
+        Vector3 halfExtents = new Vector3(width, height, 0.5f);     // z doesn't matter here because the box 'slides' from origin, forward.
+
+        if (Physics.BoxCast(origin, halfExtents, forward, out hit, Quaternion.identity, range)) 
+            Debug.Log(hit.collider.name);
+
+        bool debug = true;
+        if (debug) {
+            // Left side of box
+            Debug.DrawLine(
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(-width, 0, 0)),
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(-width, 0, range)),
+                Color.red
+            );
+            
+            // Right side of box
+            Debug.DrawLine(
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(width, 0, 0)),
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(width, 0, range)),
+                Color.red
+            );
+        }
+    }
     
     private void Shoot() {
         Vector3 start = aimerObj.transform.position;

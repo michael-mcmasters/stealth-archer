@@ -47,16 +47,14 @@ public class CursorBow : IWeapon {
         lineRendererObj.startWidth = 0.1f;
         lineRendererObj.endWidth = 0.1f;
         lineRendererObj.material = new Material(Shader.Find("Sprites/Default"));
-        // lr.SetPosition(0, new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z));
-        // lr.SetPosition(1, new Vector3());
     }
 
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
         Debug.Log("ContinueAim");
-        // aimer circle follows cursor
+        // Aimer circle follows cursor
         cursorObj.transform.position = joystickData.AroundPlayerPosition;
 
-        // line follows circle
+        // Line follows circle
         float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
         lineRendererObj.positionCount = 2;
         lineRendererObj.SetPosition(0, new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z));
@@ -65,13 +63,11 @@ public class CursorBow : IWeapon {
 
     private void FinishAim() {
         Debug.Log("FinishAim");
-        Debug.Log("Shootting isn't completed yet");
-        // shoot
+        Debug.Log("Shooting isn't completed yet");
     }
 
     private void CancelAim() {
         Debug.Log("CancelAim");
-        // destroy circle and line
     }
 }
 }
