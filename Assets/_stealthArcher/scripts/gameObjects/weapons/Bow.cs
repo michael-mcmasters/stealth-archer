@@ -116,7 +116,7 @@ public class Bow : IWeapon {
     private void Shoot(AimData aimData) {
         Vector3 spawnPosition = aimData.pathPoints[0];
         Quaternion spawnRotation = Quaternion.LookRotation((aimData.pathPoints[1] - spawnPosition).normalized);
-        Arrow arrow = Instantiate(arrowPrefab, spawnPosition, spawnRotation).GetComponent<Arrow>();
+        Arrow arrow = Instantiate(GameObjects.ArrowPrefab, spawnPosition, spawnRotation).GetComponent<Arrow>();
         
         Destroy(aimerLineRendererObj);
         arrow.Shoot(aimData.pathPoints, arrowSpeed, damage);

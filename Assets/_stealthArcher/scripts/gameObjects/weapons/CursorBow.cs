@@ -1,4 +1,6 @@
-﻿using _stealthArcher.scripts.constants;
+﻿using System.Collections.Generic;
+using _stealthArcher.scripts.constants;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace _stealthArcher.scripts.weaponPrefabs {
@@ -34,10 +36,10 @@ public class CursorBow : IWeapon {
     }
 
     private void BeginAim(JoystickData joystickData) {
-        Debug.Log("BeginAim");
         // Create Cursor
         cursorObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        cursorObj.transform.localScale = new Vector3(0.1f, 10, 0.1f);
+        Destroy(cursorObj.GetComponent<Collider>());
+        cursorObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
         cursorObj.transform.position = joystickData.AroundPlayerPosition;
         
         // Create Line Renderer
@@ -50,20 +52,34 @@ public class CursorBow : IWeapon {
     }
 
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
-        Debug.Log("ContinueAim");
-        // Aimer circle follows cursor
-        cursorObj.transform.position = joystickData.AroundPlayerPosition;
+        // Shoot ray from screen to AroundPlayerPosition to detect what is under cursor
+        Vector3 cursorPosition = Vector3.zero;
+        Vector3 target = VectorUtil.NewPointInDirection(joystickData.AroundPlayerPosition, joystickData.Direction, 10); // push target forward a little so it doesn't start where player obj is
+        Vector3 origin = Camera.main.transform.position;
+        Vector3 direction = (target - origin).normalized;
+        Ray ray = new Ray(origin, direction);
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f)) {
+            cursorPosition = hit.point;
+        }
+        
+        // Cursor follows touch
+        cursorObj.transform.position = cursorPosition;
 
         // Line follows circle
         float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
         lineRendererObj.positionCount = 2;
         lineRendererObj.SetPosition(0, new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z));
-        lineRendererObj.SetPosition(1, joystickData.AroundPlayerPosition);
+        lineRendererObj.SetPosition(1, cursorPosition);
     }
-
+    
     private void FinishAim() {
-        Debug.Log("FinishAim");
-        Debug.Log("Shooting isn't completed yet");
+        Vector3 start = lineRendererObj.GetPosition(0);
+        Vector3 end = lineRendererObj.GetPosition(1);
+        Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
+        Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
+        
+        Destroy(lineRendererObj);
+        arrow.Shoot(new List<Vector3>() {start, end}, 25, 5);
     }
 
     private void CancelAim() {

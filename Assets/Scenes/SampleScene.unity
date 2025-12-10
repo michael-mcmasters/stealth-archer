@@ -403,6 +403,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1053342660}
   cancelText: {fileID: 2104636747}
+  arrowPrefab: {fileID: 3620037301732726720, guid: e5653aa8f252b4ca4be6691bb464f10d,
+    type: 3}
   bowPrefab: {fileID: 4832144936102308691, guid: f00c15c70c3df47fdb81672c160b6be0,
     type: 3}
   heavyBowPrefab: {fileID: 4832144936102308691, guid: dde9000fbc2c0479d9275473676bf598,

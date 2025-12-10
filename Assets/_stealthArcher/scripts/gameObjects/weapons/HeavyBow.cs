@@ -24,7 +24,6 @@ public class HeavyBow : IWeapon {
     [SerializeField] private float widthDecreaseSpeed = 0.005f;
     private float minAllowedWidth = 0.1f;
     
-    [SerializeField] private GameObject arrowPrefab;
     [SerializeField] private float arrowSpeed;
     [SerializeField] private float damage;
 
@@ -149,7 +148,7 @@ public class HeavyBow : IWeapon {
         Vector3 start = aimerObj.transform.position;
         Vector3 end = VectorUtil.NewPointInDirection(aimerObj, 100);
         Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
-        Arrow arrow = Instantiate(arrowPrefab, start, spawnRotation).GetComponent<Arrow>();
+        Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
         
         Destroy(aimerObj);
         arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
