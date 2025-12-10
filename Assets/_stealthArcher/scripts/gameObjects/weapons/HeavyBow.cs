@@ -27,6 +27,10 @@ public class HeavyBow : IWeapon {
     [SerializeField] private float arrowSpeed;
     [SerializeField] private float damage;
 
+    private Collider lastEnemyCollider;
+    private Vector3 lockedOnTouchGroundPosition;
+    private LineRenderer lineRendererObj;
+
 
     void Start() {
         this.playerObj = GameObjects.Player;
@@ -83,10 +87,65 @@ public class HeavyBow : IWeapon {
         aimerMesh = new Mesh();
         mf.mesh = aimerMesh;
         mr.material = new Material(Shader.Find("Standard"));
+        
+        // Create Line Renderer
+        GameObject lineObj = new GameObject("DynamicLineRenderer");
+        lineRendererObj = lineObj.AddComponent<LineRenderer>();
+        lineRendererObj.positionCount = 0;
+        lineRendererObj.startWidth = 0.1f;
+        lineRendererObj.endWidth = 0.1f;
+        lineRendererObj.material = new Material(Shader.Find("Sprites/Default"));
 
         currentAimerWidth = initialAimerWidth;
     }
 
+    // private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
+    //     float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
+    //     aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
+    //     
+    //     if (currentAimerWidth > minAllowedWidth) {
+    //         currentAimerWidth -= widthDecreaseSpeed;
+    //     }
+    //     
+    //     int length = 3;
+    //     SetAimerMesh(
+    //         new Vector3(0, 0, 0),
+    //         new Vector3(-currentAimerWidth, 0, length),
+    //         new Vector3(currentAimerWidth, 0, length)
+    //     );
+    //     
+    //     aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
+    //     checkEnemies(playerObj, joystickData);
+    //
+    //     // aimerObj.transform.rotation = joystickData.Rotation;
+    //     // Vector3 euler = aimerObj.transform.rotation.eulerAngles;
+    //     // euler.x = 17.63f;   // aim it down
+    //     // aimerObj.transform.rotation = Quaternion.Euler(euler);
+    // }
+
+    // private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
+    //     float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
+    //     aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
+    //     
+    //     if (currentAimerWidth > minAllowedWidth) {
+    //         currentAimerWidth -= widthDecreaseSpeed;
+    //     }
+    //     
+    //     int length = 3;
+    //     SetAimerMesh(
+    //         new Vector3(0, 0, 0),
+    //         new Vector3(-currentAimerWidth, 0, length),
+    //         new Vector3(currentAimerWidth, 0, length)
+    //     );
+    //     
+    //     aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
+    //     
+    //     RaycastHit[] detectedEnemies = detectEnemies(playerObj, joystickData);
+    //     Collider enemy = chooseEnemyToAimAt(detectedEnemies);
+    //
+    //     aimerObj.transform.LookAt(enemy.transform);
+    // }
+    
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
         float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
         aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
@@ -102,17 +161,54 @@ public class HeavyBow : IWeapon {
             new Vector3(currentAimerWidth, 0, length)
         );
         
-        aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
-        checkEnemies(playerObj, joystickData);
+        aimerObj.transform.rotation = joystickData.Rotation;
+        
+        RaycastHit[] detectedEnemies = detectEnemies(playerObj, joystickData);
+        if (currentAimerWidth < 0.5f && detectedEnemies.Length > 0) {
+            Collider enemyCollider = chooseEnemyToAimAt(detectedEnemies);
+            if (enemyCollider != lastEnemyCollider) {
+                lastEnemyCollider = enemyCollider;
+                lockedOnTouchGroundPosition = joystickData.AroundPlayerPosition;
+            
+                // Look at collider
+                // aimerObj.transform.LookAt(enemyCollider.transform);
+            }
+        
+            // Player aims up/down
+            // get initial and current as local pos to play
+            // take z axis to determine how far up/down has moved
+            Vector3 touchDownLp = VectorUtil.toLocalPosition(playerObj, lockedOnTouchGroundPosition);
+            Vector3 touchCurrentLp = VectorUtil.toLocalPosition(playerObj, joystickData.AroundPlayerPosition);
+            float zDifference = touchDownLp.z - touchCurrentLp.z;
 
-        // aimerObj.transform.rotation = joystickData.Rotation;
-        // Vector3 euler = aimerObj.transform.rotation.eulerAngles;
-        // euler.x = 17.63f;   // aim it down
-        // aimerObj.transform.rotation = Quaternion.Euler(euler);
+            // Move aimer up/down
+            aimerObj.transform.LookAt(enemyCollider.transform);
+            Vector3 euler = aimerObj.transform.rotation.eulerAngles;
+            euler.x += zDifference;
+            aimerObj.transform.rotation = Quaternion.Euler(euler);
+        
+            // Visualize with a Line
+            Vector3 origin = aimerObj.transform.position;
+            Vector3 direction = aimerObj.transform.forward;
+            Ray ray = new Ray(origin, direction);
+            Vector3 rayEndPoint = Vector3.zero;
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f)) {
+                rayEndPoint = hit.point;
+            }
+        
+            lineRendererObj.positionCount = 2;
+            lineRendererObj.SetPosition(0, aimerObj.transform.position);
+            lineRendererObj.SetPosition(1, rayEndPoint);
+        }
+        else {
+            lineRendererObj.positionCount = 0;
+            aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
+        }
+        
     }
-
-    private void checkEnemies(GameObject playerObj, JoystickData joystickData) {
-        float width = 0.5f;
+    
+    private RaycastHit[] detectEnemies(GameObject playerObj, JoystickData joystickData) {
+        float width = 0.05f;
         float height = 20;
         float range = 100f;
         
@@ -120,11 +216,10 @@ public class HeavyBow : IWeapon {
         Vector3 forward = aimerObj.transform.forward;
         Vector3 halfExtents = new Vector3(width, height, 0.5f);     // z doesn't matter here because the box 'slides' from origin, forward.
 
-        RaycastHit[] hits = Physics.BoxCastAll(origin, halfExtents, forward, Quaternion.identity, range, LayerMasks.DetectPlayerAimer);
-        foreach (RaycastHit hit in hits) {
-            Debug.Log(hit.collider.name);
+        RaycastHit[] detectedEnemies = Physics.BoxCastAll(origin, halfExtents, forward, Quaternion.identity, range, LayerMasks.DetectPlayerAimer);
+        foreach (RaycastHit hit in detectedEnemies) {
+            // Debug.Log(hit.collider.name);
         }
-
 
         bool debug = true;
         if (debug) {
@@ -142,6 +237,12 @@ public class HeavyBow : IWeapon {
                 Color.red
             );
         }
+
+        return detectedEnemies;
+    }
+
+    private Collider chooseEnemyToAimAt(RaycastHit[] detectedEnemies) {
+        return detectedEnemies[0].collider;
     }
     
     private void Shoot() {
@@ -151,11 +252,13 @@ public class HeavyBow : IWeapon {
         Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
         
         Destroy(aimerObj);
+        Destroy(lineRendererObj);
         arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
     }
     
     private void CancelAim() {
         Destroy(aimerObj);
+        Destroy(lineRendererObj);
     }
     
     public void SetAimerMesh(Vector3 start, Vector3 topLeft, Vector3 topRight) {
