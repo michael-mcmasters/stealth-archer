@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4832144936102308689}
-  - component: {fileID: -8395580972566649645}
+  - component: {fileID: 6414216916105531485}
   m_Layer: 0
-  m_Name: Bow
+  m_Name: RegularBow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-8395580972566649645
+--- !u!114 &6414216916105531485
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,9 +41,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 4832144936102308691}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5cc1c997a78148e7a2c91331d623233, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a666697670d41a28950d47a1050badd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  widthDecreaseSpeed: 0.005
-  arrowSpeed: 20
-  damage: 100

@@ -411,9 +411,12 @@ MonoBehaviour:
     type: 3}
   cursorBowPrefab: {fileID: 4832144936102308691, guid: 2381982d1ea5dca43b5e11d6f9f3c2b0,
     type: 3}
+  regularBowPrefab: {fileID: 4832144936102308691, guid: d6e0e41666b56914da025b41c126b32e,
+    type: 3}
   boomerangPrefab: {fileID: 783707860498777724, guid: b0753d0c1c4ef4ecf97481c3c2917647,
     type: 3}
   boomerangProjectile: {fileID: 0}
+  cursor: {fileID: 4334309204935175380, guid: 6ef054d7e17872845ac7ff24c3432b4a, type: 3}
   leftJoystick: {fileID: 1672673624}
   leftJoystickOuterCircleObj: {fileID: 1935141226}
   leftJoystickInnerCircleObj: {fileID: 1624684521}
@@ -1247,7 +1250,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Boomerang
+  m_text: Regular Bow
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2604,7 +2607,7 @@ GameObject:
   - component: {fileID: 1055288153}
   - component: {fileID: 1055288152}
   m_Layer: 5
-  m_Name: BoomerangButton
+  m_Name: RegularBowButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2676,7 +2679,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1053342661}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
-        m_MethodName: OnBoomerangeButton
+        m_MethodName: OnRegularBowButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4178,7 +4181,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
-    m_RotationOrder: 0
+    m_RotationOrder: 4
   EightAxisMode: 0
   MaxRangeRadiusMultiplier: 1
   FollowSpeed: 0.5
@@ -4530,6 +4533,11 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: a4f92a476a9894bb098351aa8acf80e8, type: 2}
+    - target: {fileID: 3619802927379012477, guid: b859c913e87004f08a267da02cc2c6aa,
+        type: 3}
+      propertyPath: m_Radius
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 9066403510485103679, guid: b859c913e87004f08a267da02cc2c6aa,
         type: 3}
       propertyPath: m_RootOrder
@@ -4538,7 +4546,7 @@ PrefabInstance:
     - target: {fileID: 9066403510485103679, guid: b859c913e87004f08a267da02cc2c6aa,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.09827
+      value: 13.66
       objectReference: {fileID: 0}
     - target: {fileID: 9066403510485103679, guid: b859c913e87004f08a267da02cc2c6aa,
         type: 3}
@@ -4548,7 +4556,7 @@ PrefabInstance:
     - target: {fileID: 9066403510485103679, guid: b859c913e87004f08a267da02cc2c6aa,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.5485353
+      value: 3.86
       objectReference: {fileID: 0}
     - target: {fileID: 9066403510485103679, guid: b859c913e87004f08a267da02cc2c6aa,
         type: 3}

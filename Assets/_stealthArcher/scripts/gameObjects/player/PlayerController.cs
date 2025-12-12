@@ -36,8 +36,8 @@ public class PlayerController : MonoBehaviour
         SelectWeapon(GameObjects.HeavyBowPrefab);
     }
     
-    public void OnBoomerangeButton() {
-        SelectWeapon(GameObjects.BoomerangPrefab);
+    public void OnRegularBowButton() {
+        SelectWeapon(GameObjects.RegularBowPrefab);
     }
     
     public void OnCursorBowButton() {

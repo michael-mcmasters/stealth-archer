@@ -1,15 +1,14 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using _stealthArcher.scripts.constants;
 using _stealthArcher.scripts.models;
 using DigitalRubyShared;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Assertions;
 using TouchPhase = UnityEngine.TouchPhase;
 
 namespace _stealthArcher.scripts.weaponPrefabs {
-public class HeavyBow : IWeapon {
+public class RegularBow : IWeapon {
 
     private Trackpad trackpad;
     // private Joystick joystick;
@@ -20,44 +19,17 @@ public class HeavyBow : IWeapon {
     private GameObject aimerObj;
     private Mesh aimerMesh;
 
-    private float initialAimerWidth = 0.7f;
+    private float initialAimerWidth = 0.8f;
     private float currentAimerWidth = 0;
     [SerializeField] private float widthDecreaseSpeed = 0.005f;
     private float minAllowedWidth = 0.1f;
     
-    [SerializeField] private float arrowSpeed;
-    [SerializeField] private float damage;
-
-    private Collider lastEnemyCollider;
-    private Collider targetEnemyCollider;
-    private Vector3 lockedOnTouchGroundPosition;
-    private LineRenderer lineRendererObj;
-
-    private Vector3 lastAroundPlayerPosition;
+    [SerializeField] private float arrowSpeed = 10;
+    [SerializeField] private float damage = 5;
 
 
     void Start() {
         this.playerObj = GameObjects.Player;
-        // this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
-        //     switch (joystickEvent) {
-        //         case JoystickEvent.Down:
-        //             BeginAim();
-        //             break;
-        //         case JoystickEvent.Hold:
-        //             ContinueAim(playerObj, joystickData);
-        //             break;
-        //         case JoystickEvent.Up:
-        //             Shoot();
-        //             break;
-        //         case JoystickEvent.InCancelRange:
-        //             ContinueAim(playerObj, joystickData);
-        //             // HandleInCancelRange();       // Make red to indicate you're about to cancel
-        //             break;
-        //         case JoystickEvent.Cancel:
-        //             CancelAim();
-        //             break;
-        //     }
-        // });
         this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
             switch (joystickEvent) {
                 case JoystickEvent.Down:
@@ -91,30 +63,14 @@ public class HeavyBow : IWeapon {
         aimerMesh = new Mesh();
         mf.mesh = aimerMesh;
         mr.material = new Material(Shader.Find("Standard"));
-        
-        // Create Line Renderer
-        GameObject lineObj = new GameObject("DynamicLineRenderer");
-        lineRendererObj = lineObj.AddComponent<LineRenderer>();
-        lineRendererObj.positionCount = 0;
-        lineRendererObj.startWidth = 0.1f;
-        lineRendererObj.endWidth = 0.1f;
-        lineRendererObj.material = new Material(Shader.Find("Sprites/Default"));
 
         currentAimerWidth = initialAimerWidth;
-        targetEnemyCollider = null;
-        lastAroundPlayerPosition = Vector3.zero;
     }
 
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
         float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
         aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
         
-        // Reset aimer if mouse moved
-        if (!targetEnemyCollider && !VectorUtil.VectorsAreEqual(joystickData.AroundPlayerPosition, lastAroundPlayerPosition)) {
-            lastAroundPlayerPosition = joystickData.AroundPlayerPosition;
-            currentAimerWidth = initialAimerWidth;
-        }
-        // Decrease aimer
         if (currentAimerWidth > minAllowedWidth) {
             currentAimerWidth -= widthDecreaseSpeed;
         }
@@ -127,64 +83,25 @@ public class HeavyBow : IWeapon {
         );
         
         aimerObj.transform.rotation = joystickData.Rotation;
-
         RaycastHit[] detectedEnemies = detectEnemies();
-        Collider potentialTargetEnemy = chooseEnemyToAimAt(detectedEnemies);
-        if (currentAimerWidth < 0.5f && potentialTargetEnemy != null) {
-            if (targetEnemyCollider == null) {
-                targetEnemyCollider = potentialTargetEnemy;
-                HighlightTargetEnemy(targetEnemyCollider);
-                
-                lockedOnTouchGroundPosition = joystickData.AroundPlayerPosition;
-                
-            }
-        
-            // Player aims up/down
-            // get initial and current as local pos to play
-            // take z axis to determine how far up/down has moved
-            Vector3 touchDownLp = VectorUtil.toLocalPosition(aimerObj, lockedOnTouchGroundPosition);
-            Vector3 touchCurrentLp = VectorUtil.toLocalPosition(aimerObj, joystickData.AroundPlayerPosition);
-            float zDifference = touchDownLp.z - touchCurrentLp.z;
+        Collider targetEnemy = chooseEnemyToAimAt(detectedEnemies);
 
-            // Move aimer up/down
-            aimerObj.transform.LookAt(targetEnemyCollider.transform);
-            Vector3 euler = aimerObj.transform.rotation.eulerAngles;
-            euler.x += zDifference;
-            aimerObj.transform.rotation = Quaternion.Euler(euler);
+        // Quaternion prevRotation = aimerObj.transform.rotation;
+        // aimerObj.transform.LookAt(targetEnemy.transform);
+        // aimerObj.transform.rotation = Quaternion.Euler(aimerObj.transform.rotation.x, prevRotation.y, prevRotation.z);
         
-            // Visualize with a Line
-            Vector3 origin = aimerObj.transform.position;
-            Vector3 direction = aimerObj.transform.forward;
-            Ray ray = new Ray(origin, direction);
-            Vector3 rayEndPoint = Vector3.zero;
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f)) {
-                rayEndPoint = hit.point;
-            }
+        // aimerObj.transform.rotation = joystickData.Rotation;
+        // Vector3 euler = aimerObj.transform.rotation.eulerAngles;
+        // euler.x = 17.63f;   // aim it down
+        // aimerObj.transform.rotation = Quaternion.Euler(euler);
         
-            lineRendererObj.positionCount = 2;
-            lineRendererObj.SetPosition(0, aimerObj.transform.position);
-            lineRendererObj.SetPosition(1, rayEndPoint);
-        }
-        else {
-            if (targetEnemyCollider != null) {
-                HighlightTargetEnemy(targetEnemyCollider);
-            }
-            else if (potentialTargetEnemy != null) {
-                HighlightTargetEnemy(potentialTargetEnemy);
-            }
-            
-            lineRendererObj.positionCount = 0;
-            aimerObj.transform.rotation = aimerObj.transform.rotation = joystickData.Rotation;
-        }
-        
+        aimerObj.transform.rotation = joystickData.Rotation;
+        Vector3 toTarget = targetEnemy.bounds.center - aimerObj.transform.position;
+        Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z);
+        float angleDown = Vector3.SignedAngle(toTargetXZ, toTarget, aimerObj.transform.right);
+        aimerObj.transform.Rotate(angleDown, 0f, 0f, Space.Self);
     }
 
-    private void HighlightTargetEnemy(Collider targetEnemy) {
-        Vector3 indicatorPosition = targetEnemy.transform.position;
-        indicatorPosition.y = targetEnemy.transform.localScale.y + 1;
-        DebugExtension.DebugWireSphere(indicatorPosition, Color.magenta, 0.2f);
-    }
-    
     private RaycastHit[] detectEnemies() {
         float width = 0.5f;
         float height = 20;
@@ -243,14 +160,11 @@ public class HeavyBow : IWeapon {
         Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
         
         Destroy(aimerObj);
-        Destroy(lineRendererObj);
         arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
-        // Debug.Break(); // temp
     }
     
     private void CancelAim() {
         Destroy(aimerObj);
-        Destroy(lineRendererObj);
     }
     
     public void SetAimerMesh(Vector3 start, Vector3 topLeft, Vector3 topRight) {

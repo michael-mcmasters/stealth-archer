@@ -28,6 +28,9 @@ public class GameObjects : MonoBehaviour {
     [SerializeField] private GameObject cursorBowPrefab;
     public static GameObject CursorBowPrefab => Instance.cursorBowPrefab;
     
+    [SerializeField] private GameObject regularBowPrefab;
+    public static GameObject RegularBowPrefab => Instance.regularBowPrefab;
+    
     [SerializeField] private GameObject boomerangPrefab;
     public static GameObject BoomerangPrefab => Instance.boomerangPrefab;
     
@@ -36,6 +39,9 @@ public class GameObjects : MonoBehaviour {
     
     
     [Header("UI")]
+    [SerializeField] private GameObject cursor;
+    public static GameObject Cursor => Instance.cursor;
+    
     [SerializeField] private GameObject leftJoystick;
     public static GameObject LeftJoystick => Instance.leftJoystick;
     
