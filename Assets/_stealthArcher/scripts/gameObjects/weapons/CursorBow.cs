@@ -12,18 +12,27 @@ public class CursorBow : IWeapon {
     private GameObject playerObj;
     private GameObject cursorObj;
     private LineRenderer lineRendererObj;
+
+    private GameObject enemy;
     
     void Start() {
         this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
             switch (joystickEvent) {
                 case JoystickEvent.Down:
-                    BeginAim(joystickData);
+                    BeginAim(playerObj, joystickData);
                     break;
                 case JoystickEvent.Hold:
                     ContinueAim(playerObj, joystickData);
                     break;
+                case JoystickEvent.InCancelRange:
+                    ContinueAim(playerObj, joystickData);
+                    break;
                 case JoystickEvent.Up:
                     FinishAim();
+                    break;
+                case JoystickEvent.Cancel:
+                    FinishAim();
+                    // CancelAim();
                     break;
             }
         });
@@ -34,7 +43,7 @@ public class CursorBow : IWeapon {
         trackpad?.HandleInput();
     }
 
-    private void BeginAim(JoystickData joystickData) {
+    private void BeginAim(GameObject playerObj, JoystickData joystickData) {
         // Create Cursor
         cursorObj = Instantiate(GameObjects.Cursor);
         
@@ -46,16 +55,45 @@ public class CursorBow : IWeapon {
         lineRendererObj.startWidth = 0.1f;
         lineRendererObj.endWidth = 0.1f;
         lineRendererObj.material = new Material(Shader.Find("Sprites/Default"));
+        
+        // Set Cursor point
+        // Vector3 farPoint = VectorUtil.NewPointInDirection(playerObj.transform.position, playerObj.transform.forward, 10);
+        // Vector3 farPointLp = VectorUtil.toLocalPosition(playerObj, farPoint);
+        // initialPoint =  joystickData.AroundPlayerPosition + farPointLp;
+        
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag(Tags.Enemy);
+        float lowestDistance = float.PositiveInfinity;
+        foreach (GameObject e in enemies) {
+            float distance = Vector3.Distance(playerObj.transform.position, e.transform.position);
+            if (distance < lowestDistance) {
+                lowestDistance = distance;
+                enemy = e;
+            }
+        }
+        // if (enemies.Length > 0) {
+        //     enemy = enemies[0];
+        // }
+        
+        // RaycastHit[] detectedEnemies = detectEnemies();
+        // if (detectedEnemies.Length > 0) {
+        //     enemy = chooseEnemyToAimAt(detectedEnemies).gameObject;
+        // }
+
+        ContinueAim(playerObj, joystickData);
     }
 
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
         // shoot ray from screen to cursor - get hit
         // shoot ray from aimerObj to hit
         
+        float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
+        
         // Shoot ray from screen to AroundPlayerPosition to detect what is under cursor
         Vector3 cursorPosition = Vector3.zero;
-        // Vector3 target = VectorUtil.NewPointInDirection(joystickData.AroundPlayerPosition, joystickData.Direction, 10); // push target forward a little so it doesn't start where player obj is
-        Vector3 target = joystickData.AroundPlayerPosition;
+        Vector3 enemyPosition = enemy.transform.position;
+        enemyPosition.y = lineRendererObj.gameObject.transform.position.y;
+        Vector3 target = joystickData.AroundPlayerPosition + VectorUtil.toLocalPosition(lineRendererObj.gameObject, enemyPosition);
+        
         Vector3 origin = Camera.main.transform.position;
         Vector3 direction = (target - origin).normalized;
         Ray ray = new Ray(origin, direction);
@@ -67,7 +105,6 @@ public class CursorBow : IWeapon {
         cursorObj.transform.position = cursorPosition;
 
         // Line points to cursor
-        float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
         Vector3 aimerStartPoint = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
         Vector3 aimerEndPoint = AimerToCursorRay(aimerStartPoint, cursorPosition);
         
@@ -113,6 +150,61 @@ public class CursorBow : IWeapon {
         Debug.Log("CancelAim");
         Destroy(cursorObj);
         Destroy(lineRendererObj);
+    }
+    
+    private RaycastHit[] detectEnemies() {
+        GameObject aimerObj = lineRendererObj.gameObject;
+        
+        float width = 0.5f;
+        float height = 20;
+        float range = 100f;
+        
+        Vector3 origin = aimerObj.transform.position;
+        Vector3 forward = aimerObj.transform.forward;
+        Vector3 halfExtents = new Vector3(width, height, 0.5f);     // z doesn't matter here because the box 'slides' from origin, forward.
+
+        RaycastHit[] detectedEnemies = Physics.BoxCastAll(origin, halfExtents, forward, Quaternion.identity, range, LayerMasks.DetectPlayerAimer);
+        foreach (RaycastHit hit in detectedEnemies) {
+            // Debug.Log(hit.collider.name);
+        }
+
+        bool debug = true;
+        if (debug) {
+            // Left side of box
+            Debug.DrawLine(
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(-width, 0, 0)),
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(-width, 0, range)),
+                Color.red
+            );
+            
+            // Right side of box
+            Debug.DrawLine(
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(width, 0, 0)),
+                VectorUtil.toWorldPosition(aimerObj, new Vector3(width, 0, range)),
+                Color.red
+            );
+        }
+
+        return detectedEnemies;
+    }
+
+    private Collider chooseEnemyToAimAt(RaycastHit[] detectedEnemies) {
+        GameObject aimerObj = lineRendererObj.gameObject;
+        
+        Collider targetCollider = null;
+
+        float closestXToCenter = Mathf.Infinity;
+        foreach (RaycastHit hit in detectedEnemies) {
+            float xPositionLp = VectorUtil.toLocalPosition(aimerObj, hit.collider.transform.position).x;
+            float distanceFromCenter = Mathf.Abs(xPositionLp);
+
+            if (distanceFromCenter < closestXToCenter) {
+                closestXToCenter = distanceFromCenter;
+                targetCollider = hit.collider;
+            }
+        }
+
+        return targetCollider;
     }
 }
 }
