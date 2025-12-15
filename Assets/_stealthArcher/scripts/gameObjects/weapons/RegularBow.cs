@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using _stealthArcher.scripts.constants;
 using _stealthArcher.scripts.models;
 using DigitalRubyShared;
@@ -18,7 +20,9 @@ public class RegularBow : IWeapon {
     
     private GameObject aimerObj;
     private Mesh aimerMesh;
-
+    private GameObject enemyAimIndicatorObj;
+    private Collider targetEnemy;
+    
     private float initialAimerWidth = 0.8f;
     private float currentAimerWidth = 0;
     [SerializeField] private float widthDecreaseSpeed = 0.005f;
@@ -65,16 +69,23 @@ public class RegularBow : IWeapon {
         mr.material = new Material(Shader.Find("Standard"));
 
         currentAimerWidth = initialAimerWidth;
+        
+        enemyAimIndicatorObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        enemyAimIndicatorObj.transform.localScale = Vector3.one;
+        var mat = new Material(Shader.Find("Standard"));
+        mat.color = Color.yellow;
+        enemyAimIndicatorObj.GetComponent<Renderer>().material = mat;
     }
 
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
+        // Move aimer to player
         float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
         aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
         
+        // Shrink aimer as it's held down
         if (currentAimerWidth > minAllowedWidth) {
             currentAimerWidth -= widthDecreaseSpeed;
         }
-        
         int length = 3;
         SetAimerMesh(
             new Vector3(0, 0, 0),
@@ -82,24 +93,15 @@ public class RegularBow : IWeapon {
             new Vector3(currentAimerWidth, 0, length)
         );
         
+        // Make aimer rotate with finger
         aimerObj.transform.rotation = joystickData.Rotation;
+        
+        // Detect and highlight an enemy being aimed at (if any)
         RaycastHit[] detectedEnemies = detectEnemies();
-        Collider targetEnemy = chooseEnemyToAimAt(detectedEnemies);
-
-        // Quaternion prevRotation = aimerObj.transform.rotation;
-        // aimerObj.transform.LookAt(targetEnemy.transform);
-        // aimerObj.transform.rotation = Quaternion.Euler(aimerObj.transform.rotation.x, prevRotation.y, prevRotation.z);
-        
-        // aimerObj.transform.rotation = joystickData.Rotation;
-        // Vector3 euler = aimerObj.transform.rotation.eulerAngles;
-        // euler.x = 17.63f;   // aim it down
-        // aimerObj.transform.rotation = Quaternion.Euler(euler);
-        
-        aimerObj.transform.rotation = joystickData.Rotation;
-        Vector3 toTarget = targetEnemy.bounds.center - aimerObj.transform.position;
-        Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z);
-        float angleDown = Vector3.SignedAngle(toTargetXZ, toTarget, aimerObj.transform.right);
-        aimerObj.transform.Rotate(angleDown, 0f, 0f, Space.Self);
+        targetEnemy = chooseEnemyToAimAt(detectedEnemies);
+        if (targetEnemy != null) {
+            enemyAimIndicatorObj.transform.position = new Vector3(targetEnemy.transform.position.x, targetEnemy.transform.position.y + (targetEnemy.transform.localScale.y * 0.5f), targetEnemy.transform.position.z);
+        }
     }
 
     private RaycastHit[] detectEnemies() {
@@ -154,17 +156,35 @@ public class RegularBow : IWeapon {
     }
     
     private void Shoot() {
-        Vector3 start = aimerObj.transform.position;
-        Vector3 end = VectorUtil.NewPointInDirection(aimerObj, 100);
-        Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
-        Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
+        if (targetEnemy) {
+            // Shoot at enemy
+            Vector3 start = aimerObj.transform.position;
+            // Vector3 end = targetEnemy.transform.position;
+            Transform head = targetEnemy.transform.parent.Cast<Transform>().FirstOrDefault(t => t.name == Constants.HEAD);
+            if (head == null) {
+                throw new Exception("Did not find 'Head' gameobject to exist on 'Enemy' gameobject");
+            }
+            Vector3 end = head.transform.position;
+            Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
+            Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
+            arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
+        }
+        else {
+            // Just shoot forward
+            Vector3 start = aimerObj.transform.position;
+            Vector3 end = VectorUtil.NewPointInDirection(aimerObj, 100);
+            Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
+            Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
+            arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
+        }
         
         Destroy(aimerObj);
-        arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
+        Destroy(enemyAimIndicatorObj);
     }
     
     private void CancelAim() {
         Destroy(aimerObj);
+        Destroy(enemyAimIndicatorObj);
     }
     
     public void SetAimerMesh(Vector3 start, Vector3 topLeft, Vector3 topRight) {
