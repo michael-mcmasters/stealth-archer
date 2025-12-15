@@ -1,208 +1,158 @@
 using System.Collections.Generic;
 using _stealthArcher.scripts.constants;
-using _stealthArcher.scripts.models;
-using DigitalRubyShared;
-using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
-using TouchPhase = UnityEngine.TouchPhase;
 
 namespace _stealthArcher.scripts.weaponPrefabs {
-public class Bow : IWeapon {
 
+public class Bow : IWeapon {
+    
     private Trackpad trackpad;
-    // private Joystick joystick;
     
     private GameObject playerObj;
-    // private float aimerHeight = 2f;
+    private GameObject cursorObj;
+    private LineRenderer lineRendererToCursorObj;
+    private LineRenderer lineRendererToGroundObj;
+
     
-    private GameObject aimerObj;
-    private Mesh aimerMesh;
-
-    private float initialAimerWidth = 0.8f;
-    private float currentAimerWidth = 0;
-    [SerializeField] private float widthDecreaseSpeed = 0.005f;
-    private float minAllowedWidth = 0.1f;
-    
-    [SerializeField] private float arrowSpeed = 10;
-    [SerializeField] private float damage = 5;
-
-
     void Start() {
-        this.playerObj = GameObjects.Player;
         this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
             switch (joystickEvent) {
                 case JoystickEvent.Down:
-                    BeginAim();
+                    BeginAim(playerObj, joystickData);
                     break;
                 case JoystickEvent.Hold:
                     ContinueAim(playerObj, joystickData);
                     break;
-                case JoystickEvent.Up:
-                    Shoot();
-                    break;
                 case JoystickEvent.InCancelRange:
                     ContinueAim(playerObj, joystickData);
-                    // HandleInCancelRange();       // Make red to indicate you're about to cancel
+                    break;
+                case JoystickEvent.Up:
+                    FinishAim();
                     break;
                 case JoystickEvent.Cancel:
-                    CancelAim();
+                    FinishAim();
+                    // CancelAim();
                     break;
             }
         });
+        this.playerObj = GameObjects.Player;
     }
-    
+
     public override void HandleInput() {
         trackpad?.HandleInput();
     }
-    
-    private void BeginAim() {
-        aimerObj = new GameObject("Aimer");
-        MeshFilter mf = aimerObj.AddComponent<MeshFilter>();
-        MeshRenderer mr = aimerObj.AddComponent<MeshRenderer>();
-        aimerMesh = new Mesh();
-        mf.mesh = aimerMesh;
-        mr.material = new Material(Shader.Find("Standard"));
 
-        currentAimerWidth = initialAimerWidth;
+    private void BeginAim(GameObject playerObj, JoystickData joystickData) {
+        // Create Cursor
+        cursorObj = Instantiate(GameObjects.Cursor);
+        
+        GameObject lr1 = new GameObject("LineRendererToCursorObj");
+        lineRendererToCursorObj = lr1.AddComponent<LineRenderer>();
+        lineRendererToCursorObj.transform.SetParent(playerObj.transform);
+        lineRendererToCursorObj.transform.localPosition = Vector3.zero;
+        lineRendererToCursorObj.transform.localRotation = Quaternion.identity;
+        lineRendererToCursorObj.transform.localScale = Vector3.one;
+        lineRendererToCursorObj.positionCount = 0;
+        lineRendererToCursorObj.startWidth = 0.1f;
+        lineRendererToCursorObj.endWidth = 0.1f;
+        lineRendererToCursorObj.material = new Material(Shader.Find("Sprites/Default"));
+        
+        GameObject lr2 = new GameObject("LineRendererToGroundObj");
+        lineRendererToGroundObj = lr2.AddComponent<LineRenderer>();
+        lineRendererToGroundObj.transform.SetParent(playerObj.transform);
+        lineRendererToGroundObj.transform.localPosition = Vector3.zero;
+        lineRendererToGroundObj.transform.localRotation = Quaternion.identity;
+        lineRendererToGroundObj.transform.localScale = Vector3.one;
+        lineRendererToGroundObj.positionCount = 0;
+        lineRendererToGroundObj.startWidth = 0.1f;
+        lineRendererToGroundObj.endWidth = 0.1f;
+        lineRendererToGroundObj.material = new Material(Shader.Find("Sprites/Default"));
+
+        ContinueAim(playerObj, joystickData);
     }
 
     private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
         float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
-        aimerObj.transform.position = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
         
-        if (currentAimerWidth > minAllowedWidth) {
-            currentAimerWidth -= widthDecreaseSpeed;
+        // Make cursor start a few units forward of player
+        Vector3 cursorPosition = Vector3.zero;
+        Vector3 offset = VectorUtil.NewPointInDirection(lineRendererToCursorObj.gameObject, 8);
+        offset.y = lineRendererToCursorObj.gameObject.transform.position.y;
+        Vector3 target = joystickData.AroundPlayerPosition + VectorUtil.toLocalPosition(lineRendererToCursorObj.gameObject, offset);
+        
+        // Shoot ray from screen to AroundPlayerPosition to detect what is under cursor (ground, player, wall, etc)
+        Vector3 origin = Camera.main.transform.position;
+        Vector3 direction = (target - origin).normalized;
+        Ray ray = new Ray(origin, direction);
+        string gameObjectHit = "";
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f)) {
+            cursorPosition = hit.point;
+            gameObjectHit = hit.transform.name;
         }
-        
-        int length = 3;
-        SetAimerMesh(
-            new Vector3(0, 0, 0),
-            new Vector3(-currentAimerWidth, 0, length),
-            new Vector3(currentAimerWidth, 0, length)
-        );
-        
-        aimerObj.transform.rotation = joystickData.Rotation;
-        RaycastHit[] detectedEnemies = detectEnemies();
-        Collider targetEnemy = chooseEnemyToAimAt(detectedEnemies);
 
-        if (targetEnemy != null) {
-            aimerObj.transform.LookAt(targetEnemy.transform);
-            HighlightTargetEnemy(targetEnemy);
-            
-        } else {
-            aimerObj.transform.rotation = joystickData.Rotation;
+        // Make CursorObj follow the touch hit point so player can visualize it
+        cursorObj.transform.position = cursorPosition;
+
+        // If aiming at ground, lift cursor hit position so that player can make head shots
+        if (gameObjectHit == Constants.GROUND) {
+            cursorPosition.y = 2;
         }
+
+        // Line from aimer to cursor
+        Vector3 aimerStartPoint = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
+        Vector3 aimerEndPoint = AimerToCursorRay(aimerStartPoint, cursorPosition);
+        lineRendererToCursorObj.positionCount = 2;
+        lineRendererToCursorObj.SetPosition(0, aimerStartPoint);
+        lineRendererToCursorObj.SetPosition(1, aimerEndPoint);
+            
+        // Line from cursor to ground
+        Vector3 lr2AimerStartPoint = cursorPosition;
+        Vector3 lr2AimerEndPoint = new Vector3(cursorPosition.x, -100, cursorPosition.z);
+        lineRendererToGroundObj.positionCount = 2;
+        lineRendererToGroundObj.SetPosition(0, lr2AimerStartPoint);
+        lineRendererToGroundObj.SetPosition(1, lr2AimerEndPoint);
+    }
+
+    private Vector3 AimerToCursorRay(Vector3 aimerStartPoint, Vector3 cursorPosition) {
+        Vector3 endPoint = cursorPosition;
         
-        // Quaternion prevRotation = aimerObj.transform.rotation;
-        // aimerObj.transform.rotation = Quaternion.Euler(aimerObj.transform.rotation.x, prevRotation.y, prevRotation.z);
-        
-        // aimerObj.transform.rotation = joystickData.Rotation;
-        // Vector3 euler = aimerObj.transform.rotation.eulerAngles;
-        // euler.x = 17.63f;   // aim it down
-        // aimerObj.transform.rotation = Quaternion.Euler(euler);
-        
-        // aimerObj.transform.rotation = joystickData.Rotation;
-        // Vector3 toTarget = targetEnemy.bounds.center - aimerObj.transform.position;
-        // Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z);
-        // float angleDown = Vector3.SignedAngle(toTargetXZ, toTarget, aimerObj.transform.right);
-        // aimerObj.transform.Rotate(angleDown, 0f, 0f, Space.Self);
+        // Vector3 origin = lineRendererObj.transform.position;
+        Vector3 origin = aimerStartPoint;
+        Vector3 direction = (cursorPosition - aimerStartPoint).normalized;
+
+        Ray ray = new Ray(origin, direction);
+
+        // Draw debug ray (white = full ray, red = hit point)
+        // Debug.DrawLine(origin, origin + direction * 1000f, Color.white); // full cast range
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f)) {
+            endPoint = hit.point;
+
+            // Draw hit point ray
+            Debug.DrawLine(origin, endPoint, Color.red);
+        }
+
+        return endPoint;
     }
     
-    private void HighlightTargetEnemy(Collider targetEnemy) {
-        Vector3 indicatorPosition = targetEnemy.transform.position;
-        indicatorPosition.y = targetEnemy.transform.localScale.y + 1;
-        DebugExtension.DebugWireSphere(indicatorPosition, Color.magenta, 0.2f);
-    }
-
-    private RaycastHit[] detectEnemies() {
-        float width = 0.5f;
-        float height = 20;
-        float range = 100f;
-        
-        Vector3 origin = aimerObj.transform.position;
-        Vector3 forward = aimerObj.transform.forward;
-        Vector3 halfExtents = new Vector3(width, height, 0.5f);     // z doesn't matter here because the box 'slides' from origin, forward.
-
-        RaycastHit[] detectedEnemies = Physics.BoxCastAll(origin, halfExtents, forward, Quaternion.identity, range, LayerMasks.DetectPlayerAimer);
-        foreach (RaycastHit hit in detectedEnemies) {
-            // Debug.Log(hit.collider.name);
-        }
-
-        bool debug = true;
-        if (debug) {
-            // Left side of box
-            Debug.DrawLine(
-                VectorUtil.toWorldPosition(aimerObj, new Vector3(-width, 0, 0)),
-                VectorUtil.toWorldPosition(aimerObj, new Vector3(-width, 0, range)),
-                Color.red
-            );
-            
-            // Right side of box
-            Debug.DrawLine(
-                VectorUtil.toWorldPosition(aimerObj, new Vector3(width, 0, 0)),
-                VectorUtil.toWorldPosition(aimerObj, new Vector3(width, 0, range)),
-                Color.red
-            );
-        }
-
-        return detectedEnemies;
-    }
-
-    private Collider chooseEnemyToAimAt(RaycastHit[] detectedEnemies) {
-        Collider targetCollider = null;
-
-        float closestXToCenter = Mathf.Infinity;
-        foreach (RaycastHit hit in detectedEnemies) {
-            float xPositionLp = VectorUtil.toLocalPosition(aimerObj, hit.collider.transform.position).x;
-            float distanceFromCenter = Mathf.Abs(xPositionLp);
-
-            if (distanceFromCenter < closestXToCenter) {
-                closestXToCenter = distanceFromCenter;
-                targetCollider = hit.collider;
-            }
-        }
-
-        return targetCollider;
-    }
-    
-    private void Shoot() {
-        Vector3 start = aimerObj.transform.position;
-        Vector3 end = VectorUtil.NewPointInDirection(aimerObj, 100);
+    private void FinishAim() {
+        Vector3 start = lineRendererToCursorObj.GetPosition(0);
+        Vector3 end = lineRendererToCursorObj.GetPosition(1);
         Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
         Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
         
-        Destroy(aimerObj);
-        arrow.Shoot(new List<Vector3>() {start, end}, arrowSpeed, damage);
+        Destroy(cursorObj);
+        Destroy(lineRendererToCursorObj);
+        Destroy(lineRendererToGroundObj);
+        arrow.Shoot(new List<Vector3>() {start, end}, 25, 5);
     }
-    
+
     private void CancelAim() {
-        Destroy(aimerObj);
+        Debug.Log("CancelAim");
+        Destroy(cursorObj);
+        Destroy(lineRendererToCursorObj);
+        Destroy(lineRendererToGroundObj);
     }
-    
-    public void SetAimerMesh(Vector3 start, Vector3 topLeft, Vector3 topRight) {
-        Vector3[] vertices = new Vector3[3];
-        int[] triangles = new int[3];
-
-        // Assign vertices
-        vertices[0] = start;
-        vertices[1] = topLeft;
-        vertices[2] = topRight;
-
-        // Define triangle (clockwise or counter-clockwise)
-        triangles[0] = 0;
-        triangles[1] = 1;
-        triangles[2] = 2;
-
-        // Apply to mesh
-        aimerMesh.Clear();
-        aimerMesh.vertices = vertices;
-        aimerMesh.triangles = triangles;
-
-        // Recalculate for lighting & visibility
-        aimerMesh.RecalculateNormals();
-        aimerMesh.RecalculateBounds();
-    }
-    
 }
 }

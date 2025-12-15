@@ -112,7 +112,7 @@ public class Joystick {
     // Shoot ray from Joystick position to the ground
     private Vector3 GetJoystickToWorldPosition(Vector2 joystickPosition) {
         Ray ray = Camera.main.ScreenPointToRay(joystickPosition);
-        LayerMask groundLayerMask = LayerMasks.GroundPlane;
+        LayerMask groundLayerMask = LayerMasks.Ground;
 
         if (Physics.Raycast(ray, out RaycastHit hit, 300, groundLayerMask)) {
             return hit.point;

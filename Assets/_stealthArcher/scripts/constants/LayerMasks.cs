@@ -9,9 +9,6 @@ namespace _stealthArcher.scripts.constants {
 
 public class LayerMasks : MonoBehaviour {
 
-    [SerializeField] private LayerMask groundPlane;             // Used for mouse clicks and such. Expands past the actual ground so that raycasts still hit something when "out of bounds".
-    public static LayerMask GroundPlane => Instance.groundPlane;
-    
     [SerializeField] private LayerMask ground;
     public static LayerMask Ground => Instance.ground;
     

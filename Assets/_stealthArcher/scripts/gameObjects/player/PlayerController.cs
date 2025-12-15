@@ -44,6 +44,10 @@ public class PlayerController : MonoBehaviour
         SelectWeapon(GameObjects.CursorBowPrefab);
     }
     
+    public void OnCursorManualBowButton() {
+        SelectWeapon(GameObjects.CursorManualBowPrefab);
+    }
+    
     public void OnWhistleButton() {
         int whistleRange = 6;
 

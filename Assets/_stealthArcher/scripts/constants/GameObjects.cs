@@ -28,6 +28,9 @@ public class GameObjects : MonoBehaviour {
     [SerializeField] private GameObject cursorBowPrefab;
     public static GameObject CursorBowPrefab => Instance.cursorBowPrefab;
     
+    [SerializeField] private GameObject cursorManualBowPrefab;
+    public static GameObject CursorManualBowPrefab => Instance.cursorManualBowPrefab;
+    
     [SerializeField] private GameObject regularBowPrefab;
     public static GameObject RegularBowPrefab => Instance.regularBowPrefab;
     

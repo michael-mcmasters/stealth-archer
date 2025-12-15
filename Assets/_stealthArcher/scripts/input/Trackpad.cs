@@ -120,7 +120,7 @@ public class Trackpad {
      * This method re-shoots ray from screen to ground to get the new ground start position relevant to the player's position
      */
     private Vector3 GetAdjustedStartPosition() {
-        Vector3 startPosition = ClickDetector.ShootRayFromScreen(touchStartPositionScreen, LayerMasks.GroundPlane).ClickPosition;
+        Vector3 startPosition = ClickDetector.ShootRayFromScreen(touchStartPositionScreen, LayerMasks.Ground).ClickPosition;
         if (enableDebug) {
             DebugUtil.DrawSphere(startPosition, Color.red);
         }

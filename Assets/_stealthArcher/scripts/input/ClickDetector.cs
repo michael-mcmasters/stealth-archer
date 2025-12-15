@@ -15,7 +15,7 @@ public class ClickDetector : MonoBehaviour {
     public static ClickData GetClick(int touchIndex, params LayerMask[] layerMasks) {
         // If no LayerMask is given, use the Ground Plane LayerMask
         if (layerMasks.Length == 0) {
-            layerMasks = new[] { LayerMasks.GroundPlane };
+            layerMasks = new[] { LayerMasks.Ground };
         }
 
         // Combine LayerMasks into 1 using bit math operation

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace _stealthArcher.scripts.weaponPrefabs {
 
-public class CursorBow : IWeapon {
+public class CursorManualBow : IWeapon {
     
     private Trackpad trackpad;
     
@@ -13,7 +13,7 @@ public class CursorBow : IWeapon {
     private GameObject cursorObj;
     private LineRenderer lineRendererObj;
 
-    private GameObject enemy;
+    // private GameObject enemy;
     
     void Start() {
         this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
@@ -40,6 +40,7 @@ public class CursorBow : IWeapon {
     }
 
     public override void HandleInput() {
+        Debug.Log("MANUAL");
         trackpad?.HandleInput();
     }
 
@@ -50,7 +51,10 @@ public class CursorBow : IWeapon {
         // Create Line Renderer
         GameObject lineObj = new GameObject("DynamicLineRenderer");
         lineRendererObj = lineObj.AddComponent<LineRenderer>();
-        lineRendererObj.transform.position = playerObj.transform.position;
+        lineRendererObj.transform.SetParent(playerObj.transform);
+        lineRendererObj.transform.localPosition = Vector3.zero;
+        lineRendererObj.transform.localRotation = Quaternion.identity;
+        lineRendererObj.transform.localScale = Vector3.one;
         lineRendererObj.positionCount = 0;
         lineRendererObj.startWidth = 0.1f;
         lineRendererObj.endWidth = 0.1f;
@@ -61,15 +65,15 @@ public class CursorBow : IWeapon {
         // Vector3 farPointLp = VectorUtil.toLocalPosition(playerObj, farPoint);
         // initialPoint =  joystickData.AroundPlayerPosition + farPointLp;
         
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag(Tags.Enemy);
-        float lowestDistance = float.PositiveInfinity;
-        foreach (GameObject e in enemies) {
-            float distance = Vector3.Distance(playerObj.transform.position, e.transform.position);
-            if (distance < lowestDistance) {
-                lowestDistance = distance;
-                enemy = e;
-            }
-        }
+        // GameObject[] enemies = GameObject.FindGameObjectsWithTag(Tags.Enemy);
+        // float lowestDistance = float.PositiveInfinity;
+        // foreach (GameObject e in enemies) {
+        //     float distance = Vector3.Distance(playerObj.transform.position, e.transform.position);
+        //     if (distance < lowestDistance) {
+        //         lowestDistance = distance;
+        //         enemy = e;
+        //     }
+        // }
         // if (enemies.Length > 0) {
         //     enemy = enemies[0];
         // }
@@ -90,9 +94,10 @@ public class CursorBow : IWeapon {
         
         // Shoot ray from screen to AroundPlayerPosition to detect what is under cursor
         Vector3 cursorPosition = Vector3.zero;
-        Vector3 enemyPosition = enemy.transform.position;
-        enemyPosition.y = lineRendererObj.gameObject.transform.position.y;
-        Vector3 target = joystickData.AroundPlayerPosition + VectorUtil.toLocalPosition(lineRendererObj.gameObject, enemyPosition);
+        // Vector3 enemyPosition = enemy.transform.position;
+        Vector3 offset = VectorUtil.NewPointInDirection(lineRendererObj.gameObject, 8);
+        offset.y = lineRendererObj.gameObject.transform.position.y;
+        Vector3 target = joystickData.AroundPlayerPosition + VectorUtil.toLocalPosition(lineRendererObj.gameObject, offset);
         
         Vector3 origin = Camera.main.transform.position;
         Vector3 direction = (target - origin).normalized;
