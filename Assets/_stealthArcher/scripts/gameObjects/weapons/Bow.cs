@@ -12,6 +12,7 @@ public class Bow : IWeapon {
     private GameObject playerObj;
     private GameObject cursorObj;
     private LineRenderer lineRendererToCursorObj;
+    private LineRenderer lineRendererToCursor2Obj;
     private LineRenderer lineRendererToGroundObj;
 
     
@@ -58,8 +59,19 @@ public class Bow : IWeapon {
         lineRendererToCursorObj.endWidth = 0.1f;
         lineRendererToCursorObj.material = new Material(Shader.Find("Sprites/Default"));
         
-        GameObject lr2 = new GameObject("LineRendererToGroundObj");
-        lineRendererToGroundObj = lr2.AddComponent<LineRenderer>();
+        GameObject lr2 = new GameObject("LineRendererToCursor2Obj");
+        lineRendererToCursorObj = lr2.AddComponent<LineRenderer>();
+        lineRendererToCursorObj.transform.SetParent(playerObj.transform);
+        lineRendererToCursorObj.transform.localPosition = Vector3.zero;
+        lineRendererToCursorObj.transform.localRotation = Quaternion.identity;
+        lineRendererToCursorObj.transform.localScale = Vector3.one;
+        lineRendererToCursorObj.positionCount = 0;
+        lineRendererToCursorObj.startWidth = 0.1f;
+        lineRendererToCursorObj.endWidth = 0.1f;
+        lineRendererToCursorObj.material = new Material(Shader.Find("Sprites/Default"));
+        
+        GameObject lr3 = new GameObject("LineRendererToGroundObj");
+        lineRendererToGroundObj = lr3.AddComponent<LineRenderer>();
         lineRendererToGroundObj.transform.SetParent(playerObj.transform);
         lineRendererToGroundObj.transform.localPosition = Vector3.zero;
         lineRendererToGroundObj.transform.localRotation = Quaternion.identity;
@@ -105,13 +117,17 @@ public class Bow : IWeapon {
         lineRendererToCursorObj.positionCount = 2;
         lineRendererToCursorObj.SetPosition(0, aimerStartPoint);
         lineRendererToCursorObj.SetPosition(1, aimerEndPoint);
-            
-        // Line from cursor to ground
-        Vector3 lr2AimerStartPoint = cursorPosition;
-        Vector3 lr2AimerEndPoint = new Vector3(cursorPosition.x, -100, cursorPosition.z);
+
+        // Vector3 lr2AimerStartPoint = cursorPosition;
+        // Vector3 lr2AimerEndPoint = new Vector3(cursorPosition.x, -100, cursorPosition.z);
+        // lineRendererToGroundObj.positionCount = 2;
+        // lineRendererToGroundObj.SetPosition(0, lr2AimerStartPoint);
+        // lineRendererToGroundObj.SetPosition(1, lr2AimerEndPoint);
+        
+        // Line from cursor to ground (up/down)
         lineRendererToGroundObj.positionCount = 2;
-        lineRendererToGroundObj.SetPosition(0, lr2AimerStartPoint);
-        lineRendererToGroundObj.SetPosition(1, lr2AimerEndPoint);
+        lineRendererToGroundObj.SetPosition(0, cursorPosition);
+        lineRendererToGroundObj.SetPosition(1, new Vector3(cursorPosition.x, -100, cursorPosition.z));
     }
 
     private Vector3 AimerToCursorRay(Vector3 aimerStartPoint, Vector3 cursorPosition) {
@@ -144,6 +160,7 @@ public class Bow : IWeapon {
         
         Destroy(cursorObj);
         Destroy(lineRendererToCursorObj);
+        Destroy(lineRendererToCursor2Obj);
         Destroy(lineRendererToGroundObj);
         arrow.Shoot(new List<Vector3>() {start, end}, 25, 5);
     }
@@ -152,6 +169,7 @@ public class Bow : IWeapon {
         Debug.Log("CancelAim");
         Destroy(cursorObj);
         Destroy(lineRendererToCursorObj);
+        Destroy(lineRendererToCursor2Obj);
         Destroy(lineRendererToGroundObj);
     }
 }
