@@ -48,6 +48,7 @@ public class Joystick {
         if (initialTouchIndex != -1) {
             touchIndex = InputFacade.GetJoystickCurrentTouchIndex(initialTouchIndex);
             JoystickData joystickData = new JoystickData();
+            
             if (InputFacade.GetTouchDown(touchIndex)) {
                 MoveJoystick(InputFacade.GetTouchPosition(touchIndex));
                 Vector3 bigCirclePositionToGround = GetJoystickToWorldPosition(joystickOuterCircleObj.transform.position);
@@ -85,14 +86,12 @@ public class Joystick {
     }
 
     private void MoveJoystick(Vector3 screenPosition) {
-        Debug.Log("screenPosition: " + screenPosition);
         joystickOuterCircleObj.transform.position = screenPosition;
         joystickInnerCircleObj.transform.position = screenPosition;
     }
 
     // Follows finger
     private void MoveJoystickWithTouch() {
-        Debug.Log("MoveJoystickWithTouch");
         // Move inner circle
         joystickInnerCircleObj.transform.position = InputFacade.GetTouchPosition(touchIndex);
         float maxDistance = Vector3.Distance(joystickOuterCircleObj.transform.position, boundaryObj.transform.position);

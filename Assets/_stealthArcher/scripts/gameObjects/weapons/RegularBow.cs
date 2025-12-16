@@ -21,6 +21,8 @@ public class RegularBow : IWeapon {
     private Mesh aimerMesh;
     private GameObject enemyAimIndicatorObj;
     private Collider targetEnemy;
+
+    private Vector3 tapLastFramePosition;
     
     private float initialAimerWidth = 0.8f;
     private float currentAimerWidth = 0;
@@ -102,10 +104,16 @@ public class RegularBow : IWeapon {
             enemyAimIndicatorObj.transform.position = new Vector3(targetEnemy.transform.position.x, targetEnemy.transform.position.y + (targetEnemy.transform.localScale.y * 0.5f), targetEnemy.transform.position.z);
         }
         
-        // Rotate camera with touch
-        // playerObj.transform.rotation = joystickData.Rotation;
-        // float yRotation = joystickData.tapCurrentPosition.x + joystickData.tapDownPosition.x;
-        // playerObj.transform.rotation = quaternion.Euler(playerObj.transform.rotation.x, yRotation, playerObj.transform.rotation.z);
+        // Rotate camera with touch - Use touch.x position (on screen) to determine how much to rotate camera
+        // GameObject cameraAnchor = GameObjects.CameraAnchor;
+        // if (tapLastFramePosition != null) {
+        //     float yRotation = joystickData.tapCurrentPosition.x - tapLastFramePosition.x;
+        //     Vector3 euler = cameraAnchor.transform.eulerAngles;
+        //     euler.y += yRotation;
+        //     cameraAnchor.transform.eulerAngles = euler;
+        //
+        //     tapLastFramePosition = joystickData.tapCurrentPosition;
+        // }
     }
 
     private RaycastHit[] detectEnemies() {
