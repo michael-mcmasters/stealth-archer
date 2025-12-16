@@ -7,6 +7,8 @@ public struct JoystickData {
     public Vector3 Direction;
     public Quaternion Rotation;
     public float TiltPercentage;        // Is a decimal value from 0 to 1
+    public Vector3 tapDownPosition;     // screen position
+    public Vector3 tapCurrentPosition;  // screen position
 
 }
 }

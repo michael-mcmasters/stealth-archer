@@ -53,6 +53,7 @@ public class Joystick {
                 Vector3 bigCirclePositionToGround = GetJoystickToWorldPosition(joystickOuterCircleObj.transform.position);
                 Vector3 smallCirclePositionToGround = GetJoystickToWorldPosition(joystickInnerCircleObj.transform.position);
                 joystickData.AroundPlayerPosition = MimicTouchInputAroundPlayer(bigCirclePositionToGround, smallCirclePositionToGround);
+                joystickData.tapDownPosition = joystickInnerCircleObj.transform.position;
                 callback(JoystickEvent.Down, joystickData);
             }
             if (InputFacade.GetTouch(touchIndex)) {
@@ -62,7 +63,8 @@ public class Joystick {
                 joystickData.AroundPlayerPosition = MimicTouchInputAroundPlayer(bigCirclePositionToGround, smallCirclePositionToGround);
                 joystickData.Direction = (smallCirclePositionToGround - bigCirclePositionToGround).normalized;
                 joystickData.Rotation = Quaternion.LookRotation((smallCirclePositionToGround - bigCirclePositionToGround), Vector3.up);
-                
+                joystickData.tapCurrentPosition = joystickInnerCircleObj.transform.position;
+
                 float startDistance = 0;
                 float midDistance = Vector3.Distance(joystickOuterCircleObj.transform.position, joystickInnerCircleObj.transform.position);
                 float percentage = ((midDistance - startDistance) / (endDistance - startDistance));

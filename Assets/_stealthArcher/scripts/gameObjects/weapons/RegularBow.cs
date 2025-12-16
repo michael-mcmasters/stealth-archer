@@ -12,11 +12,10 @@ using TouchPhase = UnityEngine.TouchPhase;
 namespace _stealthArcher.scripts.weaponPrefabs {
 public class RegularBow : IWeapon {
 
-    private Trackpad trackpad;
-    // private Joystick joystick;
+    // private Trackpad trackpad;
+    private Joystick trackpad;
     
     private GameObject playerObj;
-    // private float aimerHeight = 2f;
     
     private GameObject aimerObj;
     private Mesh aimerMesh;
@@ -34,7 +33,7 @@ public class RegularBow : IWeapon {
 
     void Start() {
         this.playerObj = GameObjects.Player;
-        this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
+        this.trackpad = new Joystick(SpecificTouch.Right, (joystickEvent, joystickData) => {
             switch (joystickEvent) {
                 case JoystickEvent.Down:
                     BeginAim();
@@ -102,6 +101,11 @@ public class RegularBow : IWeapon {
         if (targetEnemy != null) {
             enemyAimIndicatorObj.transform.position = new Vector3(targetEnemy.transform.position.x, targetEnemy.transform.position.y + (targetEnemy.transform.localScale.y * 0.5f), targetEnemy.transform.position.z);
         }
+        
+        // Rotate camera with touch
+        // playerObj.transform.rotation = joystickData.Rotation;
+        // float yRotation = joystickData.tapCurrentPosition.x + joystickData.tapDownPosition.x;
+        // playerObj.transform.rotation = quaternion.Euler(playerObj.transform.rotation.x, yRotation, playerObj.transform.rotation.z);
     }
 
     private RaycastHit[] detectEnemies() {
@@ -159,10 +163,9 @@ public class RegularBow : IWeapon {
         if (targetEnemy) {
             // Shoot at enemy
             Vector3 start = aimerObj.transform.position;
-            // Vector3 end = targetEnemy.transform.position;
             Transform head = targetEnemy.transform.parent.Cast<Transform>().FirstOrDefault(t => t.name == Constants.HEAD);
             if (head == null) {
-                throw new Exception("Did not find 'Head' gameobject to exist on 'Enemy' gameobject");
+                throw new Exception("Did not find 'Head' gameobject as a child of 'Enemy' gameobject");
             }
             Vector3 end = head.transform.position;
             Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
