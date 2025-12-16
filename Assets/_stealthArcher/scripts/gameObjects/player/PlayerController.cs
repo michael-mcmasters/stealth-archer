@@ -1,11 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
-using _stealthArcher;
-using _stealthArcher.scripts;
 using _stealthArcher.scripts.constants;
-using _stealthArcher.scripts.models;
 using _stealthArcher.scripts.weaponPrefabs;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovementHandler))]
@@ -46,6 +41,18 @@ public class PlayerController : MonoBehaviour
     
     public void OnCursorManualBowButton() {
         SelectWeapon(GameObjects.CursorManualBowPrefab);
+    }
+    
+    public void OnRotateCameraRightButton() {
+        Vector3 euler = GameObjects.CameraAnchor.transform.eulerAngles;
+        euler.y += 45f;
+        GameObjects.CameraAnchor.transform.eulerAngles = euler;
+    }
+    
+    public void OnRotateCameraLeftButton() {
+        Vector3 euler = GameObjects.CameraAnchor.transform.eulerAngles;
+        euler.y -= 45f;
+        GameObjects.CameraAnchor.transform.eulerAngles = euler;
     }
     
     public void OnWhistleButton() {

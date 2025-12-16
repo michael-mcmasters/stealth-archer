@@ -13,6 +13,9 @@ public class GameObjects : MonoBehaviour {
     [SerializeField] private GameObject player;
     public static GameObject Player => Instance.player;
     
+    [SerializeField] private GameObject cameraAnchor;
+    public static GameObject CameraAnchor => Instance.cameraAnchor;
+    
     [SerializeField] private GameObject cancelText;
     public static GameObject CancelText => Instance.cancelText;
 

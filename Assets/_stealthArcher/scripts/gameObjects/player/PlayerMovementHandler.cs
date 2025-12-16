@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using _stealthArcher;
 using _stealthArcher.scripts;
+using _stealthArcher.scripts.constants;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -56,48 +57,50 @@ public class PlayerMovementHandler : MonoBehaviour {
         characterController.Move(gravityMovement * Time.deltaTime);
     }
 
-    // Returns true if keyboard input was detected
+        // Returns true if keyboard input was detected
     private bool HandleKeyboardControls() {
+        GameObject cameraAnchor = GameObjects.CameraAnchor;
+        
         // Angled movement
         if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A)) {
-            Vector3 angledDirection = Vector3.Lerp(characterController.transform.forward, -characterController.transform.right, 0.5f);
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+            Vector3 angledDirection = Vector3.Lerp(cameraAnchor.transform.forward, -cameraAnchor.transform.right, 0.5f);
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, angledDirection, 1));
             return true;
         }
         if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.D)) {
-            Vector3 angledDirection = Vector3.Lerp(characterController.transform.forward, characterController.transform.right, 0.5f);
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+            Vector3 angledDirection = Vector3.Lerp(cameraAnchor.transform.forward, cameraAnchor.transform.right, 0.5f);
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, angledDirection, 1));
             return true;
         }
         if (Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.A)) {
-            Vector3 angledDirection = Vector3.Lerp(-characterController.transform.right, -characterController.transform.forward, 0.5f);
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+            Vector3 angledDirection = Vector3.Lerp(-cameraAnchor.transform.right, -cameraAnchor.transform.forward, 0.5f);
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, angledDirection, 1));
             return true;
         }
         if (Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D)) {
-            Vector3 angledDirection = Vector3.Lerp(characterController.transform.right, -characterController.transform.forward, 0.5f);
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+            Vector3 angledDirection = Vector3.Lerp(cameraAnchor.transform.right, -cameraAnchor.transform.forward, 0.5f);
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, angledDirection, 1));
             return true;
         }
         
         // One-directional movement
         if (Input.GetKey(KeyCode.W)) {
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, characterController.transform.forward, 1));
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, cameraAnchor.transform.forward, 1));
             return true;
         }
 
         if (Input.GetKey(KeyCode.A)) {
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, -characterController.transform.right, 1));
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, -cameraAnchor.transform.right, 1));
             return true;
         }
 
         if (Input.GetKey(KeyCode.S)) {
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, -characterController.transform.forward, 1));
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, -cameraAnchor.transform.forward, 1));
             return true;
         }
 
         if (Input.GetKey(KeyCode.D)) {
-            Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, characterController.transform.right, 1));
+            Move(1, VectorUtil.NewPointInDirection(cameraAnchor.transform.position, cameraAnchor.transform.right, 1));
             return true;
         }
         
@@ -107,6 +110,58 @@ public class PlayerMovementHandler : MonoBehaviour {
         
         return false;
     }
+    
+    // // Returns true if keyboard input was detected
+    // private bool HandleKeyboardControls() {
+    //     // Angled movement
+    //     if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A)) {
+    //         Vector3 angledDirection = Vector3.Lerp(characterController.transform.forward, -characterController.transform.right, 0.5f);
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+    //         return true;
+    //     }
+    //     if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.D)) {
+    //         Vector3 angledDirection = Vector3.Lerp(characterController.transform.forward, characterController.transform.right, 0.5f);
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+    //         return true;
+    //     }
+    //     if (Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.A)) {
+    //         Vector3 angledDirection = Vector3.Lerp(-characterController.transform.right, -characterController.transform.forward, 0.5f);
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+    //         return true;
+    //     }
+    //     if (Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D)) {
+    //         Vector3 angledDirection = Vector3.Lerp(characterController.transform.right, -characterController.transform.forward, 0.5f);
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, angledDirection, 1));
+    //         return true;
+    //     }
+    //     
+    //     // One-directional movement
+    //     if (Input.GetKey(KeyCode.W)) {
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, characterController.transform.forward, 1));
+    //         return true;
+    //     }
+    //
+    //     if (Input.GetKey(KeyCode.A)) {
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, -characterController.transform.right, 1));
+    //         return true;
+    //     }
+    //
+    //     if (Input.GetKey(KeyCode.S)) {
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, -characterController.transform.forward, 1));
+    //         return true;
+    //     }
+    //
+    //     if (Input.GetKey(KeyCode.D)) {
+    //         Move(1, VectorUtil.NewPointInDirection(characterController.transform.position, characterController.transform.right, 1));
+    //         return true;
+    //     }
+    //     
+    //     if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.D)) {
+    //         HideMovementVisualizer();
+    //     }
+    //     
+    //     return false;
+    // }
     
     private void Move(float tiltPercentage, Vector3 aroundPlayerPosition) {
         Vector3 direction = (aroundPlayerPosition - this.transform.position).normalized;
