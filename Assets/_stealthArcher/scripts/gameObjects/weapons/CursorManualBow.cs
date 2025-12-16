@@ -40,7 +40,6 @@ public class CursorManualBow : IWeapon {
     }
 
     public override void HandleInput() {
-        Debug.Log("MANUAL");
         trackpad?.HandleInput();
     }
 

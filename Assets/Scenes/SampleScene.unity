@@ -240,6 +240,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 36117656}
+  - component: {fileID: 36117657}
   m_Layer: 7
   m_Name: CameraAnchor
   m_TagString: Untagged
@@ -255,14 +256,26 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 36117655}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 19.626875, y: 4.771, z: 18.537188}
+  m_LocalScale: {x: 0.5, y: 0.75, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 330585546}
-  m_Father: {fileID: 1053342666}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &36117657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36117655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 613bfd51c0304eb9b73b5c8224724bd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &76087346 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9066403510485103679, guid: b859c913e87004f08a267da02cc2c6aa,
@@ -2644,7 +2657,6 @@ Transform:
   m_LocalScale: {x: 0.5, y: 0.75, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 36117656}
   - {fileID: 1292370045}
   - {fileID: 2104636748}
   m_Father: {fileID: 0}
@@ -6260,6 +6272,7 @@ SceneRoots:
   - {fileID: 241181685}
   - {fileID: 1282145511}
   - {fileID: 931559245}
+  - {fileID: 36117656}
   - {fileID: 1053342666}
   - {fileID: 28953379}
   - {fileID: 548904633}

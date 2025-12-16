@@ -13,6 +13,7 @@ public class GameObjects : MonoBehaviour {
     [SerializeField] private GameObject player;
     public static GameObject Player => Instance.player;
     
+    // We rotate this to rotate the camera (since camera is its child)
     [SerializeField] private GameObject cameraAnchor;
     public static GameObject CameraAnchor => Instance.cameraAnchor;
     
