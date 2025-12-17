@@ -1,176 +1,113 @@
 using System.Collections.Generic;
 using _stealthArcher.scripts.constants;
-using Unity.VisualScripting;
+using _stealthArcher.scripts.models;
+using DigitalRubyShared;
 using UnityEngine;
+using TouchPhase = UnityEngine.TouchPhase;
 
 namespace _stealthArcher.scripts.weaponPrefabs {
-
 public class Bow : IWeapon {
-    
+
     private Trackpad trackpad;
+
+    private bool inputActive;
+
+    [Header("Aiming")]
+    private LineRenderer aimerLineRendererObj;
+    private Material aimerLineRendererInitialMaterial;
+    [SerializeField] private Material aimerLineRendererCancelMaterial;
+    
+    [Header("Shooting")]
+    [SerializeField] private float arrowSpeed;
+    [SerializeField] private float damage;
+
+    private AimData aimData;
     
     private GameObject playerObj;
-    private GameObject cursorObj;
-    private LineRenderer lineRendererToCursorObj;
-    private LineRenderer lineRendererToCursor2Obj;
-    private LineRenderer lineRendererToGroundObj;
 
-    
+
     void Start() {
+        this.playerObj = GameObjects.Player;
         this.trackpad = new Trackpad(SpecificTouch.Right, (joystickEvent, joystickData) => {
             switch (joystickEvent) {
                 case JoystickEvent.Down:
-                    BeginAim(playerObj, joystickData);
+                    BeginAim();
                     break;
                 case JoystickEvent.Hold:
-                    ContinueAim(playerObj, joystickData);
-                    break;
-                case JoystickEvent.InCancelRange:
-                    ContinueAim(playerObj, joystickData);
+                    ContinueAim(playerObj, joystickData.AroundPlayerPosition);
                     break;
                 case JoystickEvent.Up:
-                    FinishAim();
+                    AimData aimData = FinishAim();
+                    Shoot(aimData);
+                    break;
+                case JoystickEvent.InCancelRange:
+                    ContinueAim(playerObj, joystickData.AroundPlayerPosition);
+                    HandleInCancelRange();
                     break;
                 case JoystickEvent.Cancel:
-                    FinishAim();
-                    // CancelAim();
+                    CancelAim();
                     break;
             }
         });
-        this.playerObj = GameObjects.Player;
     }
 
     public override void HandleInput() {
         trackpad?.HandleInput();
     }
 
-    private void BeginAim(GameObject playerObj, JoystickData joystickData) {
-        // Create Cursor
-        cursorObj = Instantiate(GameObjects.Cursor);
-        
+    private void BeginAim() {
         GameObject lr1 = new GameObject("LineRendererToCursorObj");
-        lineRendererToCursorObj = lr1.AddComponent<LineRenderer>();
-        lineRendererToCursorObj.transform.SetParent(playerObj.transform);
-        lineRendererToCursorObj.transform.localPosition = Vector3.zero;
-        lineRendererToCursorObj.transform.localRotation = Quaternion.identity;
-        lineRendererToCursorObj.transform.localScale = Vector3.one;
-        lineRendererToCursorObj.positionCount = 0;
-        lineRendererToCursorObj.startWidth = 0.1f;
-        lineRendererToCursorObj.endWidth = 0.1f;
-        lineRendererToCursorObj.material = new Material(Shader.Find("Sprites/Default"));
+        aimerLineRendererObj = lr1.AddComponent<LineRenderer>();
+        aimerLineRendererObj.transform.SetParent(playerObj.transform);
+        aimerLineRendererObj.transform.localPosition = Vector3.zero;
+        aimerLineRendererObj.transform.localRotation = Quaternion.identity;
+        aimerLineRendererObj.transform.localScale = Vector3.one;
+        aimerLineRendererObj.positionCount = 0;
+        aimerLineRendererObj.startWidth = 0.1f;
+        aimerLineRendererObj.endWidth = 0.1f;
+        aimerLineRendererObj.material = new Material(Shader.Find("Sprites/Default"));
         
-        GameObject lr2 = new GameObject("LineRendererToCursor2Obj");
-        lineRendererToCursorObj = lr2.AddComponent<LineRenderer>();
-        lineRendererToCursorObj.transform.SetParent(playerObj.transform);
-        lineRendererToCursorObj.transform.localPosition = Vector3.zero;
-        lineRendererToCursorObj.transform.localRotation = Quaternion.identity;
-        lineRendererToCursorObj.transform.localScale = Vector3.one;
-        lineRendererToCursorObj.positionCount = 0;
-        lineRendererToCursorObj.startWidth = 0.1f;
-        lineRendererToCursorObj.endWidth = 0.1f;
-        lineRendererToCursorObj.material = new Material(Shader.Find("Sprites/Default"));
-        
-        GameObject lr3 = new GameObject("LineRendererToGroundObj");
-        lineRendererToGroundObj = lr3.AddComponent<LineRenderer>();
-        lineRendererToGroundObj.transform.SetParent(playerObj.transform);
-        lineRendererToGroundObj.transform.localPosition = Vector3.zero;
-        lineRendererToGroundObj.transform.localRotation = Quaternion.identity;
-        lineRendererToGroundObj.transform.localScale = Vector3.one;
-        lineRendererToGroundObj.positionCount = 0;
-        lineRendererToGroundObj.startWidth = 0.1f;
-        lineRendererToGroundObj.endWidth = 0.1f;
-        lineRendererToGroundObj.material = new Material(Shader.Find("Sprites/Default"));
-
-        ContinueAim(playerObj, joystickData);
+        aimerLineRendererInitialMaterial = aimerLineRendererObj.GetComponent<Renderer>().material;
     }
 
-    private void ContinueAim(GameObject playerObj, JoystickData joystickData) {
-        float aimerHeight = playerObj.transform.position.y + playerObj.transform.localScale.y;
+    private void ContinueAim(GameObject playerObj, Vector3 joystickPosition) {
+        aimerLineRendererObj.GetComponent<Renderer>().material = aimerLineRendererInitialMaterial;
         
-        // Make cursor start a few units forward of player
-        Vector3 cursorPosition = Vector3.zero;
-        Vector3 offset = VectorUtil.NewPointInDirection(lineRendererToCursorObj.gameObject, 8);
-        offset.y = lineRendererToCursorObj.gameObject.transform.position.y;
-        Vector3 target = joystickData.AroundPlayerPosition + VectorUtil.toLocalPosition(lineRendererToCursorObj.gameObject, offset);
+        float distance = Vector3.Distance(playerObj.transform.position, joystickPosition) * 0.5f;
+        Vector3 midPoint = VectorUtil.NewPointInTargetsDirection(playerObj.transform.position, joystickPosition, distance);
+        midPoint.y = playerObj.transform.position.y + 2;
         
-        // Shoot ray from screen to AroundPlayerPosition to detect what is under cursor (ground, player, wall, etc)
-        Vector3 origin = Camera.main.transform.position;
-        Vector3 direction = (target - origin).normalized;
-        Ray ray = new Ray(origin, direction);
-        string gameObjectHit = "";
-        if (Physics.Raycast(ray, out RaycastHit hit, 1000f)) {
-            cursorPosition = hit.point;
-            gameObjectHit = hit.transform.name;
+        List<Vector3> bezierPath = BezierCurveGenerator.CreateBezierCurve(playerObj.transform.position, midPoint, joystickPosition);
+        aimerLineRendererObj.positionCount = bezierPath.Count;
+        for (int i = 0; i < bezierPath.Count; i++) {
+            aimerLineRendererObj.SetPosition(i, bezierPath[i]);
         }
-
-        // Make CursorObj follow the touch hit point so player can visualize it
-        cursorObj.transform.position = cursorPosition;
-
-        // If aiming at ground, lift cursor hit position so that player can make head shots
-        if (gameObjectHit == Constants.GROUND) {
-            cursorPosition.y = 2;
-        }
-
-        // Line from aimer to cursor
-        Vector3 aimerStartPoint = new Vector3(playerObj.transform.position.x, aimerHeight, playerObj.transform.position.z);
-        Vector3 aimerEndPoint = AimerToCursorRay(aimerStartPoint, cursorPosition);
-        lineRendererToCursorObj.positionCount = 2;
-        lineRendererToCursorObj.SetPosition(0, aimerStartPoint);
-        lineRendererToCursorObj.SetPosition(1, aimerEndPoint);
-
-        // Vector3 lr2AimerStartPoint = cursorPosition;
-        // Vector3 lr2AimerEndPoint = new Vector3(cursorPosition.x, -100, cursorPosition.z);
-        // lineRendererToGroundObj.positionCount = 2;
-        // lineRendererToGroundObj.SetPosition(0, lr2AimerStartPoint);
-        // lineRendererToGroundObj.SetPosition(1, lr2AimerEndPoint);
         
-        // Line from cursor to ground (up/down)
-        lineRendererToGroundObj.positionCount = 2;
-        lineRendererToGroundObj.SetPosition(0, cursorPosition);
-        lineRendererToGroundObj.SetPosition(1, new Vector3(cursorPosition.x, -100, cursorPosition.z));
-    }
-
-    private Vector3 AimerToCursorRay(Vector3 aimerStartPoint, Vector3 cursorPosition) {
-        Vector3 endPoint = cursorPosition;
-        
-        // Vector3 origin = lineRendererObj.transform.position;
-        Vector3 origin = aimerStartPoint;
-        Vector3 direction = (cursorPosition - aimerStartPoint).normalized;
-
-        Ray ray = new Ray(origin, direction);
-
-        // Draw debug ray (white = full ray, red = hit point)
-        // Debug.DrawLine(origin, origin + direction * 1000f, Color.white); // full cast range
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 1000f)) {
-            endPoint = hit.point;
-
-            // Draw hit point ray
-            Debug.DrawLine(origin, endPoint, Color.red);
-        }
-
-        return endPoint;
+        this.aimData = new AimData(bezierPath);
     }
     
-    private void FinishAim() {
-        Vector3 start = lineRendererToCursorObj.GetPosition(0);
-        Vector3 end = lineRendererToCursorObj.GetPosition(1);
-        Quaternion spawnRotation = Quaternion.LookRotation((end - start).normalized);
-        Arrow arrow = Instantiate(GameObjects.ArrowPrefab, start, spawnRotation).GetComponent<Arrow>();
-        
-        Destroy(cursorObj);
-        Destroy(lineRendererToCursorObj);
-        Destroy(lineRendererToCursor2Obj);
-        Destroy(lineRendererToGroundObj);
-        arrow.Shoot(new List<Vector3>() {start, end}, 25, 5);
+
+    private void HandleInCancelRange() {
+        aimerLineRendererObj.GetComponent<Renderer>().material = aimerLineRendererCancelMaterial;
     }
 
     private void CancelAim() {
-        Debug.Log("CancelAim");
-        Destroy(cursorObj);
-        Destroy(lineRendererToCursorObj);
-        Destroy(lineRendererToCursor2Obj);
-        Destroy(lineRendererToGroundObj);
+        Destroy(aimerLineRendererObj);
     }
+    
+    private AimData FinishAim() {
+        Destroy(aimerLineRendererObj);
+        return aimData;
+    }
+
+    private void Shoot(AimData aimData) {
+        Vector3 spawnPosition = aimData.pathPoints[0];
+        Quaternion spawnRotation = Quaternion.LookRotation((aimData.pathPoints[1] - spawnPosition).normalized);
+        Arrow arrow = Instantiate(GameObjects.ArrowPrefab, spawnPosition, spawnRotation).GetComponent<Arrow>();
+        
+        Destroy(aimerLineRendererObj);
+        arrow.Shoot(aimData.pathPoints, arrowSpeed, damage);
+    }
+    
 }
 }

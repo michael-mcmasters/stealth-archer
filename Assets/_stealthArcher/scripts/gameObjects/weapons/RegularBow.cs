@@ -102,7 +102,16 @@ public class RegularBow : IWeapon {
         targetEnemy = chooseEnemyToAimAt(detectedEnemies);
         if (targetEnemy != null) {
             enemyAimIndicatorObj.transform.position = new Vector3(targetEnemy.transform.position.x, targetEnemy.transform.position.y + (targetEnemy.transform.localScale.y * 0.5f), targetEnemy.transform.position.z);
+        } else {
+            enemyAimIndicatorObj.transform.position = Vector3.zero;
         }
+        
+        // RaycastHit[] detectedEnemies = detectEnemies();
+        // Collider detectedEnemy = chooseEnemyToAimAt(detectedEnemies);
+        // if (detectedEnemy != null) {
+        //     enemyAimIndicatorObj.transform.position = new Vector3(detectedEnemy.transform.position.x, detectedEnemy.transform.position.y + (detectedEnemy.transform.localScale.y * 0.5f), detectedEnemy.transform.position.z);
+        //     targetEnemy = detectedEnemy;
+        // }
         
         // Rotate camera with touch - Use touch.x position (on screen) to determine how much to rotate camera
         // GameObject cameraAnchor = GameObjects.CameraAnchor;
@@ -117,7 +126,8 @@ public class RegularBow : IWeapon {
     }
 
     private RaycastHit[] detectEnemies() {
-        float width = 0.5f;
+        // float width = 0.5f;
+        float width = 10f;
         float height = 20;
         float range = 100f;
         
@@ -155,6 +165,12 @@ public class RegularBow : IWeapon {
 
         float closestXToCenter = Mathf.Infinity;
         foreach (RaycastHit hit in detectedEnemies) {
+            // Skip enemies not visible in the camera
+            Vector3 viewportPos = Camera.main.WorldToViewportPoint(hit.collider.transform.position);
+            if (viewportPos.z <= 0f || viewportPos.x < 0f || viewportPos.x > 1f || viewportPos.y < 0f || viewportPos.y > 1f) {
+                continue;
+            }
+            
             float xPositionLp = VectorUtil.toLocalPosition(aimerObj, hit.collider.transform.position).x;
             float distanceFromCenter = Mathf.Abs(xPositionLp);
 

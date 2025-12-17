@@ -43,18 +43,6 @@ public class PlayerController : MonoBehaviour
         SelectWeapon(GameObjects.CursorManualBowPrefab);
     }
     
-    public void OnRotateCameraRightButton() {
-        Vector3 euler = GameObjects.CameraAnchor.transform.eulerAngles;
-        euler.y += 45f;
-        GameObjects.CameraAnchor.transform.eulerAngles = euler;
-    }
-    
-    public void OnRotateCameraLeftButton() {
-        Vector3 euler = GameObjects.CameraAnchor.transform.eulerAngles;
-        euler.y -= 45f;
-        GameObjects.CameraAnchor.transform.eulerAngles = euler;
-    }
-    
     public void OnWhistleButton() {
         int whistleRange = 6;
 
